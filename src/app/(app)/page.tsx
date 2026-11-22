@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SlidersHorizontal, Check } from "lucide-react";
 import { requireProfile } from "@/lib/profile";
-import { todayISO, formatLongDate, greeting } from "@/lib/dates";
+import { todayISO, formatLongDate } from "@/lib/dates";
 import type { Block, Task } from "@/lib/types";
 import { PrivacyToggle } from "@/components/Privacy";
 import { QuickAdd } from "@/components/task/QuickAdd";
@@ -18,6 +18,12 @@ import { loadPrivacy, monthRange, summarize, isOperational, TX_FIELDS, type Tx }
 import { loadHabits } from "@/lib/life-data";
 import { loadTracks, summarizeTrack } from "@/lib/tracks-data";
 import { formatMetric } from "@/lib/tracks";
+import { greetingFor } from "@/lib/prefs";
+import { signedUrls } from "@/lib/media";
+import { dayNumber } from "@/lib/dates";
+import { CoverHeader } from "@/components/blocks/CoverHeader";
+import { MusicBlock } from "@/components/blocks/MusicBlock";
+import { QuoteBlock } from "@/components/blocks/QuoteBlock";
 
 export const metadata = { title: "Hari Ini" };
 
@@ -57,7 +63,8 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
   const blocks = (blocksRes.data ?? []) as Block[];
   const want = new Set(blocks.filter((b) => b.visible).map((b) => b.type));
   const { start: mStart, next: mNext } = monthRange(today.slice(0, 7));
-  const [fin, hab, trk] = await Promise.all([
+  const showCover = !atur && profile.prefs.coverShow !== false;
+  const [fin, hab, trk, quotesRes, coversRes] = await Promise.all([
     want.has("finance")
       ? Promise.all([
           loadPrivacy(supabase),
@@ -67,7 +74,15 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
       : null,
     want.has("habits") ? loadHabits(supabase, today, tz) : null,
     want.has("tracks") ? loadTracks(supabase, today, 4) : null,
+    want.has("quote") ? supabase.from("quotes").select("id,text,author").eq("active", true).order("created_at") : null,
+    showCover ? supabase.from("media").select("path").eq("kind", "cover").order("sort_order").order("created_at") : null,
   ]);
+  const coverPaths = (coversRes?.data ?? []).map((c) => c.path as string);
+  const coverPath = coverPaths.length
+    ? coverPaths[profile.prefs.coverRotate === false ? 0 : dayNumber(today) % coverPaths.length]
+    : null;
+  const coverUrl = coverPath ? (await signedUrls(supabase, [coverPath])).get(coverPath) : undefined;
+  const greet = greetingFor(profile.prefs, tz, profile.display_name ?? "kamu");
   const dayOf = (ts: string) => todayISO(tz, new Date(ts));
   const tasks = ((tasksRes.data ?? []) as Task[]).filter((t) => !t.completed_at || dayOf(t.completed_at) === today);
   const areaName = (r: { life_areas: unknown }) =>
@@ -79,22 +94,28 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
 
   return (
     <div className="flex flex-col gap-5">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <span className="text-[13px] font-medium text-muted">{formatLongDate(today)}</span>
-          <h1 className="text-2xl font-bold tracking-tight md:text-[28px]">
-            {atur ? "Atur dashboard" : `${greeting(tz)}, ${profile.display_name}`}
-          </h1>
-        </div>
-        <div className="flex gap-2">
-          <PrivacyToggle />
-          {atur ? (
-            <Link href="/" className="btn btn-primary"><Check size={16} aria-hidden />Selesai</Link>
-          ) : (
-            <Link href="/?atur=1" className="btn"><SlidersHorizontal size={16} aria-hidden />Atur dashboard</Link>
-          )}
-        </div>
-      </header>
+      {(() => {
+        const actions = (
+          <>
+            <PrivacyToggle />
+            {atur ? (
+              <Link href="/" className="btn btn-primary"><Check size={16} aria-hidden />Selesai</Link>
+            ) : (
+              <Link href="/?atur=1" className="btn"><SlidersHorizontal size={16} aria-hidden /><span className="hidden sm:inline">Atur dashboard</span></Link>
+            )}
+          </>
+        );
+        if (coverUrl && !atur) return <CoverHeader src={coverUrl} date={formatLongDate(today)} greeting={greet} actions={actions} />;
+        return (
+          <header className="flex flex-wrap items-end justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <span className="text-[13px] font-medium text-muted">{formatLongDate(today)}</span>
+              <h1 className="text-2xl font-bold tracking-tight md:text-[28px]">{atur ? "Atur dashboard" : greet}</h1>
+            </div>
+            <div className="flex gap-2">{actions}</div>
+          </header>
+        );
+      })()}
 
       {atur ? (
         <BlockEditor blocks={blocks} />
@@ -180,7 +201,7 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
                     <div key={h.id} className="flex min-h-12 items-center gap-2 border-t border-line-soft first:border-t-0">
                       <HabitToggle habitId={h.id} date={today} status={h.today} name={h.name} />
                       <Link href={`/manifestasi/habit/${h.id}`} className="flex min-w-0 flex-1 flex-col">
-                        <span className="font-medium">{h.name}</span>
+                        <span className="font-medium">{h.icon ? `${h.icon} ` : ""}{h.name}</span>
                         {h.missed >= 1 && !h.today ? <span className="text-xs font-semibold text-warn">Jangan bolong dua kali</span> : h.two_min_version ? <span className="truncate text-xs text-muted">minimal: {h.two_min_version}</span> : null}
                       </Link>
                     </div>
@@ -194,7 +215,7 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
                   {rows.length ? rows.map((s) => (
                     <Link key={s.track.id} href={`/tracks/${s.track.id}`} className="flex flex-col gap-1.5 border-t border-line-soft pt-2.5 first:border-t-0 first:pt-0">
                       <div className="flex justify-between text-sm">
-                        <span className="flex items-center gap-2 font-medium"><span className="size-2.5 rounded-full" style={{ background: s.track.color }} />{s.track.name}</span>
+                        <span className="flex items-center gap-2 font-medium">{s.track.icon ? <span aria-hidden>{s.track.icon}</span> : <span className="size-2.5 rounded-full" style={{ background: s.track.color }} />}{s.track.name}</span>
                         <span className="text-xs text-muted">{s.current ? `${s.current} hari · ` : ""}{formatMetric(s.periodValue, s.primary)}{s.primary.target ? ` / ${formatMetric(s.primary.target, s.primary)}` : ""}</span>
                       </div>
                       {s.pct != null && <Bar pct={s.pct} />}
@@ -202,6 +223,13 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
                   )) : <p className="text-sm text-muted">Belum ada track. <Link href="/tracks" className="font-semibold text-accent">Buat track</Link></p>}
                 </BlockCard>
               );
+            } else if (b.type === "quote") {
+              const qs = quotesRes?.data ?? [];
+              const n = dayNumber(today);
+              const q = qs.length ? qs[cfg.mode === "random" ? Math.floor(Math.abs(Math.sin(n * 7919)) * 1e6) % qs.length : n % qs.length] : null;
+              el = <QuoteBlock title={title} quote={q ? { text: q.text, author: q.author } : null} />;
+            } else if (b.type === "music") {
+              el = <MusicBlock title={title} url={String(cfg.url ?? "")} />;
             } else if (b.type === "note") {
               el = <NoteBlock id={b.id} title={title} text={String(cfg.text ?? "")} />;
             }

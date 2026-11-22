@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { addLog } from "@/app/(app)/tracks/actions";
 import type { Metric } from "@/lib/tracks";
+import { useSound } from "@/components/PrefsProvider";
 
 type TimerState = { startedAt: number | null; accumulated: number };
 
@@ -14,6 +15,7 @@ export function LogForm({ trackId, metrics, today }: { trackId: string; metrics:
   const [duration, setDuration] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const sound = useSound();
   const formRef = useRef<HTMLFormElement>(null);
 
   // Timer tetap berjalan walau halaman ditinggal (disimpan di perangkat).
@@ -80,6 +82,7 @@ export function LogForm({ trackId, metrics, today }: { trackId: string; metrics:
             const res = await addLog(trackId, fd);
             if (res?.error) setMsg(res.error);
             else {
+              sound("streak");
               setMsg("Sesi tercatat.");
               setDuration("");
               formRef.current?.reset();

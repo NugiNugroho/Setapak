@@ -3,6 +3,8 @@ import { requireProfile } from "@/lib/profile";
 import { todayISO, formatShortDate } from "@/lib/dates";
 import { PageHeader, Card, Field, Bar, Empty } from "@/components/ui";
 import { LifeNav } from "@/components/life/LifeNav";
+import { ImageField } from "@/components/personal/ImageField";
+import { signedUrls } from "@/lib/media";
 import {
   saveGoal, addMilestone, toggleMilestone, deleteMilestone, achieveGoal, setGoalStatus, addVision, deleteVision,
 } from "../actions";
@@ -23,6 +25,7 @@ export default async function GoalPage() {
     supabase.from("tasks").select("id,goal_id,completed_at").not("goal_id", "is", null),
   ]);
   const area = new Map((areas.data ?? []).map((a) => [a.id, a]));
+  const visionUrls = await signedUrls(supabase, (vision.data ?? []).map((v) => v.image_path));
   const active = (goals.data ?? []).filter((g) => g.status === "active");
   const past = (goals.data ?? []).filter((g) => g.status !== "active");
 
@@ -38,17 +41,20 @@ export default async function GoalPage() {
             {(vision.data ?? []).map((v) => {
               const a = area.get(v.area_id ?? "");
               return (
-                <div key={v.id} className="group relative flex min-h-24 flex-col justify-end gap-1 rounded-xl p-4" style={{ background: `${a?.color ?? "#2F6B5E"}14` }}>
+                <div key={v.id} className="group relative flex min-h-24 flex-col justify-end gap-1 overflow-hidden rounded-xl p-4" style={{ background: `${a?.color ?? "#2F6B5E"}14` }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {v.image_path && visionUrls.get(v.image_path) && <img src={visionUrls.get(v.image_path)} alt={v.caption ?? "Visi"} className="-mx-4 -mt-4 mb-2 aspect-[4/3] w-[calc(100%+2rem)] max-w-none object-cover" />}
                   {a && <span className="text-[11px] font-bold tracking-wide uppercase" style={{ color: a.color }}>{a.name}</span>}
-                  <p className="font-semibold leading-snug">{v.caption}</p>
+                  {v.caption && <p className="font-semibold leading-snug">{v.caption}</p>}
                   <form action={deleteVision.bind(null, v.id)} className="absolute top-2 right-2"><button aria-label="Hapus visi" className="flex size-8 items-center justify-center rounded-lg text-muted hover:text-neg"><Trash2 size={14} aria-hidden /></button></form>
                 </div>
               );
             })}
           </div>
         ) : <Empty>Belum ada visi.</Empty>}
-        <form action={addVision} className="flex flex-wrap gap-2">
-          <label className="min-w-[240px] flex-[3]"><span className="sr-only">Visi</span><input name="caption" required placeholder="Kuliah S2 dengan beasiswa dan meneliti ML untuk data BPS" className="field" /></label>
+        <form action={addVision} className="flex flex-wrap items-start gap-2">
+          <ImageField name="image_path" kind="vision" label="Foto visi" />
+          <label className="min-w-[240px] flex-[3]"><span className="sr-only">Visi</span><input name="caption" placeholder="Kuliah S2 dengan beasiswa dan meneliti ML untuk data BPS" className="field" /></label>
           <label className="min-w-[140px] flex-1"><span className="sr-only">Area</span><select name="area_id" className="field"><option value="">Area…</option>{(areas.data ?? []).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></label>
           <button className="btn">Tambah visi</button>
         </form>

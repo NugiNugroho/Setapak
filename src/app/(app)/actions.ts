@@ -191,6 +191,8 @@ export async function addBlock(type: string) {
     finance: { title: "Keuangan bulan ini", config: {}, size: "sm" },
     habits: { title: "Habit hari ini", config: {}, size: "md" },
     tracks: { title: "Tracks minggu ini", config: {}, size: "md" },
+    quote: { title: "Kutipan hari ini", config: { mode: "sequential" }, size: "md" },
+    music: { title: "Teman fokus", config: { url: "" }, size: "md" },
   };
   const d = defaults[type];
   if (!d) return;

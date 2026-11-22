@@ -49,8 +49,12 @@ export function HabitForm({
       </div>
 
       <section className="card flex flex-col gap-3 p-4">
-        <label className="flex flex-col gap-1.5"><span className="text-xs text-muted">{build ? "Habit" : "Kebiasaan yang ingin dihentikan"}</span>
+        <div className="flex gap-2">
+        <label className="flex w-20 shrink-0 flex-col gap-1.5"><span className="text-xs text-muted">Ikon</span>
+          <input name="icon" defaultValue={habit?.icon ?? ""} placeholder="✍️" maxLength={8} className="field text-center text-lg" /></label>
+        <label className="flex flex-1 flex-col gap-1.5"><span className="text-xs text-muted">{build ? "Habit" : "Kebiasaan yang ingin dihentikan"}</span>
           <input name="name" required value={name} onChange={(e) => setName(e.target.value)} placeholder={build ? "Menulis draft paper" : "Scroll HP sebelum tidur"} className="field font-semibold" /></label>
+        </div>
         <label className="flex flex-col gap-1.5"><span className="text-xs font-semibold text-accent">Suara untuk identitas</span>
           <select name="identity_id" value={identity} onChange={(e) => setIdentity(e.target.value)} className="field">
             {identities.map((i) => <option key={i.id} value={i.id}>{i.label}</option>)}

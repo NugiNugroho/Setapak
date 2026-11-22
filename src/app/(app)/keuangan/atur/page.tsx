@@ -82,12 +82,13 @@ export default async function AturKeuangan({ searchParams }: { searchParams: Pro
               {allCats.filter((c) => c.kind === kind).map((c) => (
                 <details key={c.id} className={c.archived ? "opacity-50" : ""}>
                   <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2.5">
-                    <span className="size-2.5 rounded-full" style={{ background: c.color ?? "#8C8A84" }} />
+                    {c.icon ? <span aria-hidden>{c.icon}</span> : <span className="size-2.5 rounded-full" style={{ background: c.color ?? "#8C8A84" }} />}
                     <span className="flex-1">{c.parent_id ? <span className="text-muted">{catName.get(c.parent_id)} › </span> : null}{c.name}</span>
                     {c.archived && <span className="text-xs text-muted">diarsipkan</span>}
                   </summary>
                   <form action={saveCategory} className="flex flex-wrap items-end gap-2 py-2">
                     <input type="hidden" name="id" value={c.id} />
+                    <Field label="Ikon"><input name="icon" defaultValue={c.icon ?? ""} placeholder="🍜" maxLength={8} className="field w-16 text-center text-lg" /></Field>
                     <Field label="Nama" className="flex-1"><input name="name" defaultValue={c.name} className="field" /></Field>
                     <Field label="Warna"><input type="color" name="color" defaultValue={c.color ?? "#8C8A84"} className="field w-14 p-1" /></Field>
                     <button className="btn text-sm">Simpan</button>
@@ -100,7 +101,7 @@ export default async function AturKeuangan({ searchParams }: { searchParams: Pro
             </div>
           ))}
           <form action={saveCategory} className="grid grid-cols-2 gap-2 border-t border-line-soft pt-3">
-            <Field label="Kategori baru"><input name="name" required className="field" /></Field>
+            <Field label="Kategori baru"><div className="flex gap-2"><input name="icon" placeholder="🍜" maxLength={8} aria-label="Ikon (emoji)" className="field w-16 text-center text-lg" /><input name="name" required className="field" /></div></Field>
             <Field label="Jenis">
               <select name="kind" className="field"><option value="expense">Pengeluaran</option><option value="income">Pemasukan</option></select>
             </Field>

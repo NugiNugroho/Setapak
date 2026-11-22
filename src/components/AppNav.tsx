@@ -11,7 +11,7 @@ function isActive(path: string, href: string) {
   return href === "/" ? path === "/" : path === href || path.startsWith(href + "/");
 }
 
-export function Sidebar({ name, modules }: { name: string; modules: Modules }) {
+export function Sidebar({ name, modules, labels }: { name: string; modules: Modules; labels: Record<string, string> }) {
   const path = usePathname();
   const items = NAV.filter((n) => !n.module || modules[n.module] !== false);
   return (
@@ -20,7 +20,8 @@ export function Sidebar({ name, modules }: { name: string; modules: Modules }) {
       className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-1 border-r border-line bg-sidebar px-4 py-6 md:flex"
     >
       <div className="px-3 pb-5"><Logo /></div>
-      {items.map(({ href, label, icon: Icon }) => {
+      {items.map(({ href, label: defaultLabel, icon: Icon, key }) => {
+        const label = (key && labels[key]) || defaultLabel;
         const active = isActive(path, href);
         return (
           <Link
@@ -51,7 +52,7 @@ export function Sidebar({ name, modules }: { name: string; modules: Modules }) {
   );
 }
 
-export function BottomNav({ modules }: { modules: Modules }) {
+export function BottomNav({ modules, labels }: { modules: Modules; labels: Record<string, string> }) {
   const path = usePathname();
   const item = (href: string, label: string, Icon: typeof Home) => {
     const active = isActive(path, href);
@@ -72,7 +73,7 @@ export function BottomNav({ modules }: { modules: Modules }) {
       className="fixed inset-x-0 bottom-0 z-30 flex h-[calc(76px+env(safe-area-inset-bottom))] items-start justify-around border-t border-line bg-surface px-3 pt-2 pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       {item("/", "Hari Ini", Home)}
-      {modules.task !== false ? item("/task", "Task", SquareCheck) : <span className="w-16" />}
+      {modules.task !== false ? item("/task", labels.task ?? "Task", SquareCheck) : <span className="w-16" />}
       <Link
         href="/task?baru=1"
         aria-label="Tambah task cepat"
@@ -80,7 +81,7 @@ export function BottomNav({ modules }: { modules: Modules }) {
       >
         <Plus size={24} strokeWidth={2.25} aria-hidden />
       </Link>
-      {modules.keuangan !== false ? item("/keuangan", "Keuangan", Wallet) : <span className="w-16" />}
+      {modules.keuangan !== false ? item("/keuangan", labels.keuangan ?? "Keuangan", Wallet) : <span className="w-16" />}
       {item("/lainnya", "Lainnya", Ellipsis)}
     </nav>
   );

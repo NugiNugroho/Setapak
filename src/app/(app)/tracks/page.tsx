@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Flame, Plus } from "lucide-react";
 import { requireProfile } from "@/lib/profile";
+import { label } from "@/lib/prefs";
 import { todayISO } from "@/lib/dates";
 import { formatMetric } from "@/lib/tracks";
 import { loadTracks, summarizeTrack } from "@/lib/tracks-data";
@@ -28,14 +29,14 @@ export default async function TracksPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader eyebrow="Progress hal yang kamu tekuni" title="Tracks" actions={<a href="#baru" className="btn btn-primary"><Plus size={16} aria-hidden />Track baru</a>} />
+      <PageHeader eyebrow="Progress hal yang kamu tekuni" title={label(profile.prefs, "tracks")} actions={<a href="#baru" className="btn btn-primary"><Plus size={16} aria-hidden />Track baru</a>} />
 
       {summaries.length ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {summaries.map((s) => (
             <Link key={s.track.id} href={`/tracks/${s.track.id}`} className="card flex flex-col gap-3 p-4 hover:border-accent">
               <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2 font-semibold"><span className="size-3 rounded-full" style={{ background: s.track.color }} />{s.track.name}</span>
+                <span className="flex items-center gap-2 font-semibold">{s.track.icon ? <span aria-hidden>{s.track.icon}</span> : <span className="size-3 rounded-full" style={{ background: s.track.color }} />}{s.track.name}</span>
                 {s.current > 0 && <span className="flex items-center gap-1 text-xs font-semibold text-[#9a4a1e]"><Flame size={13} aria-hidden />{s.current} hari</span>}
               </div>
               <div className="overflow-hidden"><Heatmap cells={s.cells} size={10} label={`Aktivitas 12 minggu ${s.track.name}`} /></div>
@@ -56,7 +57,7 @@ export default async function TracksPage() {
       <section id="baru" className="scroll-mt-6">
         <Card title="Track baru">
           <form action={createTrack} className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <Field label="Nama track" className="col-span-2"><input name="name" required placeholder="Persiapan LPDP" className="field" /></Field>
+            <Field label="Nama track" className="col-span-2"><div className="flex gap-2"><input name="icon" placeholder="📚" maxLength={8} aria-label="Ikon (emoji)" className="field w-16 text-center text-lg" /><input name="name" required placeholder="Persiapan LPDP" className="field" /></div></Field>
             <Field label="Warna">
               <select name="color" className="field">{COLORS.map((c, i) => <option key={c} value={c}>Warna {i + 1}</option>)}</select>
             </Field>

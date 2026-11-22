@@ -8,6 +8,8 @@ import { loadTracks, summarizeTrack } from "@/lib/tracks-data";
 import { PageHeader, Card, Field, Bar } from "@/components/ui";
 import { Heatmap } from "@/components/tracks/Heatmap";
 import { LogForm } from "@/components/tracks/LogForm";
+import { FocusSound } from "@/components/tracks/FocusSound";
+import { signedUrls } from "@/lib/media";
 import { addMetric, deleteLog, deleteMetric, setPrimaryMetric, setTrackArchived, updateMetric, updateTrack } from "../actions";
 
 export const metadata = { title: "Detail track" };
@@ -28,6 +30,9 @@ export default async function TrackDetail({ params }: { params: Promise<{ id: st
   ]);
   const track = tracks[0];
   if (!track) notFound();
+  const { data: songRows } = await supabase.from("media").select("id,title,path").eq("kind", "audio").order("sort_order").order("created_at");
+  const songUrls = await signedUrls(supabase, (songRows ?? []).map((s) => s.path));
+  const songs = (songRows ?? []).filter((s) => songUrls.get(s.path)).map((s) => ({ id: s.id, title: s.title ?? "Lagu", url: songUrls.get(s.path)! }));
   const metrics = allMetrics.filter((m) => m.track_id === id);
   const s = summarizeTrack(track, metrics, logs, today, 26);
   const shown: Metric[] = metrics.length ? metrics : [DURATION_METRIC];
@@ -43,7 +48,7 @@ export default async function TrackDetail({ params }: { params: Promise<{ id: st
       <Link href="/tracks" className="flex items-center gap-1 text-sm font-semibold text-accent"><ChevronLeft size={16} aria-hidden />Semua track</Link>
       <PageHeader
         eyebrow={<span className="flex items-center gap-2"><span className="size-2.5 rounded-full" style={{ background: track.color }} />{track.archived ? "Diarsipkan" : "Track"}</span>}
-        title={track.name}
+        title={`${track.icon ? track.icon + " " : ""}${track.name}`}
       />
 
       <div className="grid grid-cols-3 gap-3">
@@ -109,6 +114,7 @@ export default async function TrackDetail({ params }: { params: Promise<{ id: st
 
         <div className="flex grow basis-[320px] flex-col gap-5">
           <Card title="Catat sesi">
+            <FocusSound songs={songs} />
             <LogForm trackId={id} metrics={metrics} today={today} />
           </Card>
 
@@ -134,7 +140,7 @@ export default async function TrackDetail({ params }: { params: Promise<{ id: st
 
           <Card title="Pengaturan track">
             <form action={updateTrack.bind(null, id)} className="grid grid-cols-2 gap-2">
-              <Field label="Nama" className="col-span-2"><input name="name" defaultValue={track.name} className="field" /></Field>
+              <Field label="Nama" className="col-span-2"><div className="flex gap-2"><input name="icon" defaultValue={track.icon ?? ""} placeholder="📚" maxLength={8} aria-label="Ikon (emoji)" className="field w-16 text-center text-lg" /><input name="name" defaultValue={track.name} className="field" /></div></Field>
               <Field label="Warna"><select name="color" defaultValue={track.color} className="field">{COLORS.map((c, i) => <option key={c} value={c}>Warna {i + 1}</option>)}</select></Field>
               <Field label="Area"><select name="area_id" defaultValue={track.area_id ?? ""} className="field"><option value="">—</option>{(areas.data ?? []).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></Field>
               <Field label="Goal" className="col-span-2"><select name="goal_id" defaultValue={track.goal_id ?? ""} className="field"><option value="">—</option>{(goals.data ?? []).map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}</select></Field>

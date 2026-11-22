@@ -8,14 +8,6 @@ import {
 
 export const metadata = { title: "Pengaturan" };
 
-const ACCENTS = [
-  ["#2F6B5E", "Hijau tua"],
-  ["#2B5C8A", "Biru"],
-  ["#5B4A8F", "Ungu"],
-  ["#A5502E", "Terakota"],
-  ["#3D3C38", "Arang"],
-] as const;
-
 const ZONES = [
   ["Asia/Jakarta", "WIB (Jakarta)"],
   ["Asia/Makassar", "WITA (Makassar, Palu)"],
@@ -63,28 +55,9 @@ export default async function Pengaturan() {
           ))}
         </Section>
 
-        <Section title="Tampilan">
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-xs text-muted">Tema</legend>
-            <div className="flex gap-2">
-              {[["light", "Terang"], ["dark", "Gelap"], ["system", "Ikut sistem"]].map(([v, l]) => (
-                <label key={v} className="flex min-h-10 flex-1 cursor-pointer items-center justify-center rounded-[10px] border border-line text-sm has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:checked]:font-semibold">
-                  <input type="radio" name="theme" value={v} defaultChecked={profile.theme === v} className="sr-only" />{l}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-xs text-muted">Warna aksen</legend>
-            <div className="flex gap-3">
-              {ACCENTS.map(([c, l]) => (
-                <label key={c} className="cursor-pointer">
-                  <input type="radio" name="accent_color" value={c} defaultChecked={profile.accent_color.toLowerCase() === c.toLowerCase()} className="peer sr-only" />
-                  <span aria-label={l} className="block size-9 rounded-full ring-offset-2 ring-offset-surface peer-checked:ring-2 peer-checked:ring-ink peer-focus-visible:ring-2" style={{ background: c }} />
-                </label>
-              ))}
-            </div>
-          </fieldset>
+        <Section title="Tampilan & personalisasi">
+          <p className="text-sm text-muted">Foto sampul, warna, font, tema pagi/malam, sapaan, nama modul, suara, musik, dan kutipan.</p>
+          <a href="/pengaturan/personalisasi" className="btn btn-primary self-start">Buka Personalisasi</a>
         </Section>
 
         <Section title="Privasi keuangan">
@@ -149,6 +122,11 @@ export default async function Pengaturan() {
       </Section>
 
       <ReplayWelcome />
+
+      <a href="/pengaturan/tentang" className="card flex min-h-14 items-center justify-between px-4">
+        <span className="font-semibold">Tentang Setapak</span>
+        <span className="text-sm text-muted">Versi {process.env.NEXT_PUBLIC_APP_VERSION} ›</span>
+      </a>
 
       <form action="/auth/signout" method="post">
         <button className="btn text-neg">Keluar</button>

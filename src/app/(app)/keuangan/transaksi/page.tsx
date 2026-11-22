@@ -26,7 +26,7 @@ export default async function TxList({ searchParams }: { searchParams: Promise<{
   const [priv, { data }, cats, wallets, fields] = await Promise.all([
     loadPrivacy(supabase),
     q,
-    supabase.from("categories").select("id,name,kind,color").order("sort_order"),
+    supabase.from("categories").select("id,name,kind,color,icon").order("sort_order"),
     supabase.from("wallets").select("id,name").order("sort_order"),
     supabase.from("custom_fields").select("id,name"),
   ]);
@@ -101,7 +101,7 @@ export default async function TxList({ searchParams }: { searchParams: Promise<{
               const extras = Object.entries(t.custom_values ?? {}).map(([k, v]) => `${fname.get(k) ?? "?"}: ${v === true ? "Ya" : ([] as unknown[]).concat(v).join(", ")}`);
               return (
                 <Link key={t.id} href={`/keuangan/transaksi/${t.id}`} className="flex min-h-14 items-center gap-3 border-t border-line-soft py-2 first:border-t-0">
-                  <span className="size-2.5 shrink-0 rounded-full" style={{ background: t.kind === "transfer" ? "#BDB8AD" : c?.color ?? "#BDB8AD" }} />
+                  {c?.icon && t.kind !== "transfer" ? <span aria-hidden className="w-5 shrink-0 text-center">{c.icon}</span> : <span className="size-2.5 shrink-0 rounded-full" style={{ background: t.kind === "transfer" ? "#BDB8AD" : c?.color ?? "#BDB8AD" }} />}
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate font-medium">{t.note || (t.kind === "transfer" ? "Transfer" : c?.name ?? "Tanpa kategori")}</span>
                     <span className="truncate text-xs text-muted">

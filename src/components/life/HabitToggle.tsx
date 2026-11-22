@@ -4,6 +4,7 @@ import { useOptimistic, useTransition } from "react";
 import { Check } from "lucide-react";
 import { setHabitStatus } from "@/app/(app)/manifestasi/actions";
 import type { HabitStatus } from "@/lib/habits";
+import { useSound } from "@/components/PrefsProvider";
 
 const NEXT: Record<string, HabitStatus | null> = { none: "done", done: "minimal", minimal: null, missed: "done" };
 
@@ -21,6 +22,7 @@ export function HabitToggle({
   size?: number;
 }) {
   const [, start] = useTransition();
+  const sound = useSound();
   const [cur, setCur] = useOptimistic<HabitStatus | null>(status);
   const label = cur === "done" ? "selesai" : cur === "minimal" ? "versi 2 menit" : "belum";
   return (
@@ -30,6 +32,7 @@ export function HabitToggle({
       onClick={() =>
         start(async () => {
           const next = NEXT[cur ?? "none"];
+          if (next === "done") sound("step");
           setCur(next);
           await setHabitStatus(habitId, date, next);
         })

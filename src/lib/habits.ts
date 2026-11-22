@@ -21,6 +21,7 @@ export type Habit = {
   level: number;
   track_id: string | null;
   remind_missed: boolean;
+  icon?: string | null;
   archived: boolean;
   created_at: string;
 };

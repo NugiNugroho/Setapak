@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import type { HabitStatus } from "@/lib/habits";
+import { BUCKET } from "@/lib/media";
 
 async function ctx() {
   const { supabase, user } = await getUser();
@@ -65,6 +66,7 @@ export async function saveHabit(f: FormData) {
     frequency,
     level: Math.max(1, Number(s(f, "level") ?? 1)),
     track_id: s(f, "track_id"),
+    icon: s(f, "icon")?.slice(0, 8) ?? null,
     remind_missed: f.get("remind_missed") === "on",
   };
   const res = id
@@ -180,13 +182,16 @@ export async function setGoalStatus(goalId: string, status: "active" | "released
 export async function addVision(f: FormData) {
   const supabase = await ctx();
   const caption = s(f, "caption");
-  if (!caption) return;
-  await supabase.from("vision_items").insert({ caption, area_id: s(f, "area_id") });
+  const image_path = s(f, "image_path");
+  if (!caption && !image_path) return;
+  await supabase.from("vision_items").insert({ caption, area_id: s(f, "area_id"), image_path });
   done();
 }
 
 export async function deleteVision(id: string) {
   const supabase = await ctx();
+  const { data } = await supabase.from("vision_items").select("image_path").eq("id", id).single();
+  if (data?.image_path) await supabase.storage.from(BUCKET).remove([data.image_path]);
   await supabase.from("vision_items").delete().eq("id", id);
   done();
 }
@@ -219,11 +224,13 @@ export async function deleteScorecard(id: string) {
 export async function addJournal(f: FormData) {
   const supabase = await ctx();
   const body = s(f, "body");
-  if (!body) return;
+  const image_path = s(f, "image_path");
+  if (!body && !image_path) return;
   const kind = s(f, "kind") ?? "journal";
   await supabase.from("journal_entries").insert({
     kind: ["gratitude", "journal", "scripting"].includes(kind) ? kind : "journal",
-    body,
+    body: body ?? "",
+    image_path,
     entry_date: s(f, "entry_date") ?? undefined,
     reopen_at: kind === "scripting" ? s(f, "reopen_at") : null,
   });
@@ -232,6 +239,8 @@ export async function addJournal(f: FormData) {
 
 export async function deleteJournalEntry(id: string) {
   const supabase = await ctx();
+  const { data } = await supabase.from("journal_entries").select("image_path").eq("id", id).single();
+  if (data?.image_path) await supabase.storage.from(BUCKET).remove([data.image_path]);
   await supabase.from("journal_entries").delete().eq("id", id);
   done();
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus, Download, Lock, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { requireProfile } from "@/lib/profile";
+import { label } from "@/lib/prefs";
 import { todayISO, formatShortDate } from "@/lib/dates";
 import {
   loadPrivacy, monthRange, shiftMonth, monthLabel, summarize, isOperational, TX_FIELDS, type Tx,
@@ -24,7 +25,7 @@ export default async function KeuanganPage({ searchParams }: { searchParams: Pro
     loadPrivacy(supabase),
     supabase.from("wallets").select("id,name,kind,archived").order("sort_order").order("created_at"),
     supabase.from("wallet_balances").select("wallet_id,balance"),
-    supabase.from("categories").select("id,name,kind,color").order("sort_order"),
+    supabase.from("categories").select("id,name,kind,color,icon").order("sort_order"),
     supabase.from("budgets").select("category_id,amount").eq("month", start),
     supabase.from("transactions").select(TX_FIELDS).gte("tx_date", sixBack).lt("tx_date", next).order("tx_date", { ascending: false }).order("created_at", { ascending: false }),
     supabase.from("savings_progress").select("*").order("created_at"),
@@ -52,7 +53,7 @@ export default async function KeuanganPage({ searchParams }: { searchParams: Pro
   for (const t of monthTx) if (t.kind === "expense" && isOperational(t)) spent.set(t.category_id ?? "-", (spent.get(t.category_id ?? "-") ?? 0) + t.amount);
   const budget = new Map((budRes.data ?? []).map((b) => [b.category_id, Number(b.amount)]));
   const catRows = Array.from(new Set([...spent.keys(), ...budget.keys()]))
-    .map((id) => ({ id, name: cats.get(id)?.name ?? "Tanpa kategori", color: cats.get(id)?.color ?? "#8C8A84", spent: spent.get(id) ?? 0, budget: budget.get(id) ?? 0 }))
+    .map((id) => ({ id, name: `${cats.get(id)?.icon ? cats.get(id)!.icon + " " : ""}${cats.get(id)?.name ?? "Tanpa kategori"}`, color: cats.get(id)?.color ?? "#8C8A84", spent: spent.get(id) ?? 0, budget: budget.get(id) ?? 0 }))
     .sort((a, b) => b.spent - a.spent);
   const totalBudget = [...budget.values()].reduce((a, b) => a + b, 0);
   const budgetSpent = catRows.filter((r) => r.budget).reduce((a, r) => a + r.spent, 0);
@@ -89,7 +90,7 @@ export default async function KeuanganPage({ searchParams }: { searchParams: Pro
             {m < thisMonth && <Link href={`/keuangan?m=${shiftMonth(m, 1)}`} aria-label="Bulan berikutnya" className="rounded p-1 hover:bg-line-soft"><ChevronRight size={16} aria-hidden /></Link>}
           </span>
         }
-        title="Keuangan"
+        title={label(profile.prefs, "keuangan")}
         actions={
           <>
             <PrivacyToggle withLabel />

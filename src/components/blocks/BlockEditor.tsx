@@ -14,6 +14,8 @@ const TYPES: Record<string, string> = {
   finance: "Ringkasan keuangan",
   habits: "Habit hari ini",
   tracks: "Tracks & streak",
+  quote: "Kutipan",
+  music: "Playlist (Spotify/YouTube)",
 };
 
 export function BlockEditor({ blocks }: { blocks: Block[] }) {
@@ -53,6 +55,20 @@ export function BlockEditor({ blocks }: { blocks: Block[] }) {
             )}
             {(b.type === "priorities" || b.type === "gratitude") && (
               <Choice label="Jumlah" value={String(b.config.count ?? 3)} options={[["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"]]} onChange={(v) => start(() => updateBlock(b.id, { config: { count: Number(v) } }))} />
+            )}
+            {b.type === "music" && (
+              <label className="flex min-w-[260px] flex-1 flex-col gap-1">
+                <span className="text-xs text-muted">Tautan playlist Spotify / YouTube</span>
+                <input
+                  defaultValue={String(b.config.url ?? "")}
+                  placeholder="https://open.spotify.com/playlist/…"
+                  onBlur={(e) => e.target.value !== String(b.config.url ?? "") && start(() => updateBlock(b.id, { config: { url: e.target.value.trim() } }))}
+                  className="field"
+                />
+              </label>
+            )}
+            {b.type === "quote" && (
+              <Choice label="Urutan" value={String(b.config.mode ?? "sequential")} options={[["sequential", "Berurutan"], ["random", "Acak"]]} onChange={(v) => start(() => updateBlock(b.id, { config: { mode: v } }))} />
             )}
             {b.type === "tasks" && (
               <Choice label="Yang selesai" value={b.config.showDone === false ? "no" : "yes"} options={[["yes", "Tampilkan"], ["no", "Sembunyikan"]]} onChange={(v) => start(() => updateBlock(b.id, { config: { showDone: v === "yes" } }))} />

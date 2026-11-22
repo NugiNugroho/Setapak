@@ -25,6 +25,7 @@ export async function createTrack(f: FormData) {
     .from("tracks")
     .insert({
       name: s(f, "name") ?? "Track baru",
+      icon: s(f, "icon")?.slice(0, 8) ?? null,
       color: s(f, "color") ?? "#2F6B5E",
       area_id: s(f, "area_id"),
       goal_id: s(f, "goal_id"),
@@ -54,6 +55,7 @@ export async function updateTrack(id: string, f: FormData) {
     .from("tracks")
     .update({
       name: s(f, "name") ?? "Track",
+      icon: s(f, "icon")?.slice(0, 8) ?? null,
       color: s(f, "color") ?? "#2F6B5E",
       area_id: s(f, "area_id"),
       goal_id: s(f, "goal_id"),

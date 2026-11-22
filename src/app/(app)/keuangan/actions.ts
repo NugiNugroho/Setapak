@@ -107,8 +107,9 @@ export async function saveCategory(f: FormData) {
     kind: s(f, "kind") ?? "expense",
     color: s(f, "color") ?? "#8C8A84",
     parent_id: s(f, "parent_id"),
+    icon: s(f, "icon")?.slice(0, 8) ?? null,
   };
-  if (id) await supabase.from("categories").update({ name: row.name, color: row.color }).eq("id", id);
+  if (id) await supabase.from("categories").update({ name: row.name, color: row.color, icon: row.icon }).eq("id", id);
   else await supabase.from("categories").insert(row);
   done();
 }

@@ -28,6 +28,8 @@ Setiap akun punya data sendiri yang terkunci di level database, dan aplikasinya 
 | Tracks | Metrik kustom, log sesi, timer fokus, heatmap, streak, target |
 | Manifestasi | Identitas & suara, habit Empat Hukum, habit stack, never miss twice, level, goal & milestone, scorecard, refleksi, Annual Review |
 | Weekly Review | Ringkasan otomatis mingguan, refleksi, 3 prioritas jadi task, arsip |
+| Personalisasi | Foto sampul bergilir, vision board & jurnal bergambar, warna bebas, 4 font, tema ikut waktu, ikon emoji, sapaan & nama modul kustom, kutipan, bunyi pencapaian, suara fokus (hujan/ombak/brown noise) + lagu sendiri, blok playlist Spotify/YouTube |
+| Kenangan | Galeri Jejak, Rangkuman Tahunan + kartu PNG untuk dibagikan |
 
 Rencana berikutnya: PIN untuk nominal tersembunyi, notifikasi push, vision board bergambar, mode offline penuh.
 
@@ -39,6 +41,7 @@ Rencana berikutnya: PIN untuk nominal tersembunyi, notifikasi push, vision board
    - `supabase/migrations/20261122000000_init.sql`
    - `supabase/migrations/20261122000100_task_rollover.sql`
    - `supabase/migrations/20261122000200_finance_views.sql`
+   - `supabase/migrations/20261122000300_personalisasi.sql` (juga membuat bucket Storage `media`)
 
    (Atau dengan Supabase CLI: `supabase link --project-ref <ref>` lalu `supabase db push`.)
 3. **Authentication → URL Configuration**

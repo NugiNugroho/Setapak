@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { requireProfile } from "@/lib/profile";
+import { label } from "@/lib/prefs";
 import { todayISO, addDays, formatShortDate } from "@/lib/dates";
 import { weekStart, formatMetric, aggregate } from "@/lib/tracks";
 import { loadTracks, primaryOf } from "@/lib/tracks-data";
@@ -98,7 +99,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
     <div className="mx-auto flex max-w-3xl flex-col gap-5">
       <PageHeader
         eyebrow={<span className="flex gap-3"><Link href={`/review?w=${addDays(ws, -7)}`} className="font-semibold text-accent">‹ Minggu lalu</Link>{range(ws, we)}{ws < thisWeek && <Link href={`/review?w=${addDays(ws, 7)}`} className="font-semibold text-accent">Berikutnya ›</Link>}</span>}
-        title="Weekly Review"
+        title={label(profile.prefs, "review")}
         actions={r?.completed_at ? <span className="flex items-center gap-1.5 text-sm font-semibold text-pos"><CheckCircle2 size={18} aria-hidden />Selesai {formatShortDate(dayOf(r.completed_at), today)}</span> : undefined}
       />
       <p className="-mt-2 text-sm text-ink-2">Sekitar 15 menit. Angkanya sudah disiapkan; kamu cukup membaca, memutuskan, dan menulis.</p>

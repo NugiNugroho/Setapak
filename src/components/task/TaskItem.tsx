@@ -6,11 +6,13 @@ import { toggleTask, setTaskTop, postponeTask, deleteTask, updateTask } from "@/
 import type { Task } from "@/lib/types";
 import { formatShortDate } from "@/lib/dates";
 import { describeRecurrence } from "@/lib/recurrence";
+import { useSound } from "@/components/PrefsProvider";
 
 const FLAG = { 1: "#B5473A", 2: "#C9862B", 3: "#5A7FA8", 4: "#CFCBC2" } as const;
 
 export function TaskItem({ task, today, showDate = false }: { task: Task; today: string; showDate?: boolean }) {
   const [pending, start] = useTransition();
+  const sound = useSound();
   const [open, setOpen] = useState(false);
   const [done, setDone] = useOptimistic(!!task.completed_at);
   const [top, setTop] = useOptimistic(task.is_top);
@@ -23,7 +25,7 @@ export function TaskItem({ task, today, showDate = false }: { task: Task; today:
         <button
           type="button"
           aria-label={done ? `Tandai belum selesai: ${task.title}` : `Selesaikan: ${task.title}`}
-          onClick={() => start(async () => { setDone(!done); await toggleTask(task.id, !done, today); })}
+          onClick={() => start(async () => { if (!done) sound("done"); setDone(!done); await toggleTask(task.id, !done, today); })}
           className="-ml-2 flex size-11 shrink-0 items-center justify-center"
         >
           <span
