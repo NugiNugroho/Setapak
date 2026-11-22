@@ -13,6 +13,9 @@ export type Profile = {
   enabled_modules: Record<string, boolean>;
   auto_lock_minutes: number;
   prefs: Prefs;
+  /** false hanya bila kolom onboarded_at ada dan masih kosong. */
+  onboarded: boolean;
+  created_at: string;
 };
 
 /** Sesi + profil user; redirect ke /login bila belum masuk. Di-cache per request. */
@@ -29,6 +32,8 @@ export const requireProfile = cache(async () => {
     enabled_modules: data?.enabled_modules ?? { task: true, keuangan: true, life: true, tracks: true },
     auto_lock_minutes: data?.auto_lock_minutes ?? 5,
     prefs: (data?.prefs ?? {}) as Prefs,
+    onboarded: data ? data.onboarded_at !== null : true,
+    created_at: data?.created_at ?? new Date().toISOString(),
   };
   return { supabase, user, profile };
 });

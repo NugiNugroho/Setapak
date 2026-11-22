@@ -89,6 +89,34 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
     return { h, cells, pct: counted.length ? Math.round((kept / counted.length) * 100) : null };
   });
 
+  // Minggu pertama: rekap istimewa sejak akun dibuat (sampai review pertama selesai).
+  const ageDays = (Date.now() - Date.parse(profile.created_at)) / 864e5;
+  const firstWeek = ws === thisWeek && ageDays >= 5 && ageDays < 28 && !(past.data ?? []).some((p) => p.completed_at);
+  let first: null | { tasks: number; checkins: number; gratitude: number; txCount: number; topCat: string | null; bestHabit: { name: string; streak: number } | null } = null;
+  if (firstWeek) {
+    const since = profile.created_at;
+    const head = { count: "exact" as const, head: true };
+    const [t, c, g] = await Promise.all([
+      supabase.from("tasks").select("id", head).gte("completed_at", since),
+      supabase.from("habit_logs").select("habit_id", head).in("status", ["done", "minimal"]),
+      supabase.from("journal_entries").select("id", head).eq("kind", "gratitude"),
+    ]);
+    const sinceDay = dayOf(since);
+    const exp = all.filter((x) => x.kind === "expense" && isOperational(x) && x.tx_date >= sinceDay);
+    const byCat = new Map<string, number>();
+    for (const x of exp) if (x.category_id) byCat.set(x.category_id, (byCat.get(x.category_id) ?? 0) + x.amount);
+    const topCatId = [...byCat.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+    const best = [...habitsData.habits].sort((a, b) => b.streak - a.streak)[0];
+    first = {
+      tasks: t.count ?? 0,
+      checkins: c.count ?? 0,
+      gratitude: g.count ?? 0,
+      txCount: all.filter((x) => x.tx_date >= sinceDay).length,
+      topCat: topCatId ? catName.get(topCatId) ?? null : null,
+      bestHabit: best && best.streak > 0 ? { name: best.name, streak: best.streak } : null,
+    };
+  }
+
   const summary = { tasksDone: completed.length, topDone, weekSpend, avg4, habits: habitRows.map((r) => ({ id: r.h.id, pct: r.pct })) };
   const r = review.data;
   const answers = (r?.answers ?? {}) as Record<string, string>;
@@ -102,6 +130,27 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
         title={label(profile.prefs, "review")}
         actions={r?.completed_at ? <span className="flex items-center gap-1.5 text-sm font-semibold text-pos"><CheckCircle2 size={18} aria-hidden />Selesai {formatShortDate(dayOf(r.completed_at), today)}</span> : undefined}
       />
+      {first && (
+        <section aria-label="Minggu pertamamu" className="onb-step flex flex-col gap-4 rounded-2xl border border-accent/30 bg-accent-soft p-5">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-bold tracking-wide text-accent uppercase">Minggu pertamamu di Setapak</span>
+            <h2 className="text-xl font-bold tracking-tight">Lihat, jejakmu sudah mulai terbentuk.</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Num label="Task selesai" value={first.tasks} />
+            <Num label="Habit dicentang" value={first.checkins} />
+            <Num label="Hal disyukuri" value={first.gratitude} />
+            <Num label="Transaksi dicatat" value={first.txCount} />
+          </div>
+          <ul className="flex flex-col gap-1 text-sm text-ink-2">
+            {first.bestHabit && <li>🔥 Habit terkuat: <b>{first.bestHabit.name}</b>, {first.bestHabit.streak} langkah beruntun.</li>}
+            {first.topCat && <li>💸 Pengeluaran terbesar ada di <b>{first.topCat}</b>. Masuk akal, atau perlu budget?</li>}
+            <li>👣 Satu langkah kecil setiap hari, 52 minggu lagi jejakmu akan panjang sekali.</li>
+          </ul>
+          <p className="text-xs text-muted">Selesaikan review di bawah untuk mendapat penanda <b>Review pertama</b>.</p>
+        </section>
+      )}
+
       <p className="-mt-2 text-sm text-ink-2">Sekitar 15 menit. Angkanya sudah disiapkan; kamu cukup membaca, memutuskan, dan menulis.</p>
 
       <Card title="1 · Task">

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Plus, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
+import { Plus, AlertTriangle, TrendingUp, TrendingDown, Sprout } from "lucide-react";
 import { requireProfile } from "@/lib/profile";
 import { label } from "@/lib/prefs";
 import { todayISO, formatLongDate } from "@/lib/dates";
@@ -97,11 +98,19 @@ export default async function LifePage() {
                       {h.today === "minimal" ? `Versi 2 menit: ${h.two_min_version ?? "—"}` : [h.full_version, h.two_min_version && `minimal: ${h.two_min_version}`].filter(Boolean).join(" · ") || describeFrequency(h.frequency)}
                     </span>
                   </Link>
+                  {h.streak > 1 && <span className="text-xs font-semibold text-[#9a4a1e]" title="Streak (satu kali bolong masih aman)">🔥{h.streak}</span>}
                   {h.c30 != null && <span className="text-xs font-semibold text-muted">{h.c30}%</span>}
                 </div>
               ))}
             </div>
-          )) : <Empty>{habits.length ? "Tidak ada habit terjadwal hari ini." : <>Belum ada habit. <Link href="/manifestasi/habit/baru" className="font-semibold text-accent">Buat yang pertama</Link></>}</Empty>}
+          )) : habits.length ? <Empty>Tidak ada habit terjadwal hari ini.</Empty> : (
+            <EmptyState
+              icon={<Sprout size={24} aria-hidden />}
+              title="Belum ada habit"
+              desc="Pilih satu kebiasaan dan buat versi 2 menitnya. Kecil sekali sampai terasa mustahil gagal."
+              action={{ href: "/manifestasi/habit/baru", label: "Buat habit pertama" }}
+            />
+          )}
           {todayHabits.length > 0 && <p className="text-xs text-muted">Ketuk kotak: belum → selesai → versi 2 menit → belum.</p>}
         </Card>
 

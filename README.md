@@ -42,6 +42,7 @@ Rencana berikutnya: PIN untuk nominal tersembunyi, notifikasi push, vision board
    - `supabase/migrations/20261122000100_task_rollover.sql`
    - `supabase/migrations/20261122000200_finance_views.sql`
    - `supabase/migrations/20261122000300_personalisasi.sql` (juga membuat bucket Storage `media`)
+   - `supabase/migrations/20261122000400_onboarding.sql` (panduan awal, penanda, notifikasi)
 
    (Atau dengan Supabase CLI: `supabase link --project-ref <ref>` lalu `supabase db push`.)
 3. **Authentication → URL Configuration**
@@ -62,7 +63,13 @@ npm run dev                  # http://localhost:3000
 2. Isi Environment Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL` (URL Vercel-mu).
 3. Deploy. Setiap push ke `main` otomatis ter-deploy.
 
-### 4. Pasang di HP
+### 4. Notifikasi pengingat (opsional)
+1. Buat kunci VAPID: `npx web-push generate-vapid-keys`.
+2. Di Vercel tambahkan env: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, dan `CRON_SECRET` (teks acak panjang). Redeploy.
+3. Jalankan `supabase/setup/push-cron.sql` di SQL Editor setelah mengganti `GANTI_TOKEN` (= `CRON_SECRET`) dan `GANTI_URL`.
+   Supabase lalu memanggil `/api/push/cron` tiap 15 menit untuk mengirim ritual pagi/malam.
+
+### 5. Pasang di HP
 Buka URL aplikasi di Chrome (Android) → menu ⋮ → **Tambahkan ke layar utama**. Di iPhone: Safari → Bagikan → **Tambah ke Layar Utama**.
 
 ## Struktur

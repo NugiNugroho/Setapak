@@ -13,31 +13,34 @@ export function QuickAdd({
   defaultToday = false,
   top = false,
   placeholder = "Tambah task… contoh: Revisi essay besok 10.00 #lpdp !1",
+  suffix = "",
 }: {
   today: string;
   autoFocus?: boolean;
   defaultToday?: boolean;
   top?: boolean;
   placeholder?: string;
+  /** Teks yang otomatis ditambahkan saat disimpan, mis. "besok". */
+  suffix?: string;
 }) {
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [, start] = useTransition();
   const [saving, addSaving] = useOptimistic<string[], string>([], (list, t) => [...list, t]);
   const ref = useRef<HTMLInputElement>(null);
-  const parsed = useMemo(() => (value.trim() ? parseTaskInput(value, today) : null), [value, today]);
+  const parsed = useMemo(() => (value.trim() ? parseTaskInput(suffix ? `${value} ${suffix}` : value, today) : null), [value, today, suffix]);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!value.trim()) return;
-    const v = value;
+    const v = suffix ? `${value} ${suffix}` : value;
     setValue("");
     start(async () => {
       addSaving(parseTaskInput(v, today).title);
       const res = await quickAddTask(v, { defaultToday, top, today });
       if (res?.error) {
         setError(res.error);
-        setValue(v);
+        setValue(value);
       } else setError(null);
       ref.current?.focus();
     });

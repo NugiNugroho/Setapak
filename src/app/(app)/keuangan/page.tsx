@@ -9,6 +9,8 @@ import {
 import { PrivacyToggle, Money } from "@/components/Privacy";
 import { PageHeader, Card, Bar, Empty } from "@/components/ui";
 import { FinanceNav } from "@/components/finance/FinanceNav";
+import { EmptyState } from "@/components/EmptyState";
+import { Tip } from "@/components/Tip";
 
 export const metadata = { title: "Keuangan" };
 
@@ -100,6 +102,9 @@ export default async function KeuanganPage({ searchParams }: { searchParams: Pro
         }
       />
       <FinanceNav current="ringkasan" m={m} />
+      {allTx.length >= 3 && (
+        <Tip id="finance-privacy">Ketuk ikon <b>mata</b> di atas untuk menyembunyikan nominal saat membuka aplikasi di depan orang lain.</Tip>
+      )}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Kpi label="Pemasukan" icon={<ArrowDownLeft size={14} className="text-pos" aria-hidden />} value={<Money amount={sum.income} sensitive={priv.transactions} />} note={prev.income ? `${pct(sum.income, prev.income) >= 0 ? "+" : ""}${pct(sum.income, prev.income)}% dari bulan lalu` : ""} />
@@ -211,7 +216,11 @@ export default async function KeuanganPage({ searchParams }: { searchParams: Pro
             ))}
           </div>
         ) : (
-          <Empty>Belum ada transaksi di {monthLabel(m)}. <Link href="/keuangan/transaksi/baru" className="font-semibold text-accent">Catat yang pertama</Link></Empty>
+          <EmptyState
+            title={`Belum ada transaksi di ${monthLabel(m)}`}
+            desc={<>Mulai dari yang kecil, misalnya <b>Kopi 15rb</b>. Dalam seminggu kamu akan tahu ke mana uangmu pergi.</>}
+            action={{ href: "/keuangan/transaksi/baru", label: "Catat transaksi pertama" }}
+          />
         )}
       </Card>
     </div>

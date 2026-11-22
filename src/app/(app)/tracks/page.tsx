@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { Flame, Plus } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
+import { Flame, Plus, Activity } from "lucide-react";
 import { requireProfile } from "@/lib/profile";
 import { label } from "@/lib/prefs";
 import { todayISO } from "@/lib/dates";
 import { formatMetric } from "@/lib/tracks";
 import { loadTracks, summarizeTrack } from "@/lib/tracks-data";
-import { PageHeader, Card, Field, Bar, Empty } from "@/components/ui";
+import { PageHeader, Card, Field, Bar } from "@/components/ui";
 import { Heatmap } from "@/components/tracks/Heatmap";
 import { createTrack } from "./actions";
 
@@ -51,7 +52,12 @@ export default async function TracksPage() {
           ))}
         </div>
       ) : (
-        <Empty>Belum ada track. Buat satu untuk hal yang sedang kamu tekuni, misalnya persiapan LPDP atau menulis paper.</Empty>
+        <EmptyState
+          icon={<Activity size={24} aria-hidden />}
+          title="Belum ada track"
+          desc="Track untuk hal yang sedang kamu tekuni: belajar bahasa, lari, menulis paper, main gitar. Catat sesinya, lihat dirimu makin jago."
+          action={{ href: "#baru", label: "Buat track pertama" }}
+        />
       )}
 
       <section id="baru" className="scroll-mt-6">

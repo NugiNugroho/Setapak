@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { SquareCheck } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
+import { TaskExamples } from "@/components/task/TaskExamples";
+import { Tip } from "@/components/Tip";
 import { requireProfile } from "@/lib/profile";
 import { todayISO, formatShortDate } from "@/lib/dates";
 import type { Task } from "@/lib/types";
@@ -85,6 +89,11 @@ export default async function TaskPage({ searchParams }: { searchParams: Promise
       {v !== "selesai" && (
         <QuickAdd today={today} autoFocus={!!baru} defaultToday={v === "hari-ini"} />
       )}
+      {v !== "selesai" && (
+        <Tip id="task-parser">
+          Tulis seperti bicara: <b>Revisi essay besok 10.00 #lpdp !1</b>. Tanggal, jam, label, dan prioritas terisi otomatis.
+        </Tip>
+      )}
 
       {allLabels.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 text-sm">
@@ -114,7 +123,13 @@ export default async function TaskPage({ searchParams }: { searchParams: Promise
           {tasks.map((t) => <TaskItem key={t.id} task={t} today={today} showDate={v !== "hari-ini"} />)}
         </div>
       ) : (
-        <Empty text={v === "hari-ini" ? "Hari ini bersih. Tambahkan satu langkah kecil." : "Kosong."} />
+        v === "hari-ini" ? (
+          <EmptyState icon={<SquareCheck size={24} aria-hidden />} title="Hari ini masih bersih" desc="Tambahkan satu langkah kecil. Tidak perlu banyak, yang penting jalan.">
+            <TaskExamples today={today} examples={["Minum segelas air", "Baca 10 halaman 20.00", "Jalan kaki 15 menit #sehat"]} />
+          </EmptyState>
+        ) : (
+          <Empty text={v === "selesai" ? "Belum ada yang selesai. Langkah pertama selalu paling berharga." : "Kosong."} />
+        )
       )}
 
       <p className="text-xs text-muted">

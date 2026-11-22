@@ -2,6 +2,7 @@ import { Trash2 } from "lucide-react";
 import { requireProfile } from "@/lib/profile";
 import { loadPrivacy } from "@/lib/finance";
 import { ReplayWelcome } from "@/components/ReplayWelcome";
+import { ReminderSettings } from "@/components/settings/ReminderSettings";
 import {
   saveProfile, savePrivacy, addAffirmation, toggleAffirmation, deleteAffirmation, addIdentity, deleteIdentity,
 } from "./actions";
@@ -121,7 +122,14 @@ export default async function Pengaturan() {
         </form>
       </Section>
 
-      <ReplayWelcome />
+      <Section title="Pengingat harian" id="pengingat">
+        <ReminderSettings initial={profile.prefs.reminders} />
+      </Section>
+
+      <div className="flex flex-wrap gap-2">
+        <ReplayWelcome />
+        <a href="/mulai?ulang=1" className="btn self-start text-sm">Ulangi panduan awal</a>
+      </div>
 
       <a href="/pengaturan/tentang" className="card flex min-h-14 items-center justify-between px-4">
         <span className="font-semibold">Tentang Setapak</span>

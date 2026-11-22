@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { SlidersHorizontal, Check } from "lucide-react";
 import { requireProfile } from "@/lib/profile";
 import { todayISO, formatLongDate } from "@/lib/dates";
@@ -18,7 +19,13 @@ import { loadPrivacy, monthRange, summarize, isOperational, TX_FIELDS, type Tx }
 import { loadHabits } from "@/lib/life-data";
 import { loadTracks, summarizeTrack } from "@/lib/tracks-data";
 import { formatMetric } from "@/lib/tracks";
-import { greetingFor } from "@/lib/prefs";
+import { greetingFor, partOfDay } from "@/lib/prefs";
+import { addDays } from "@/lib/dates";
+import { RitualCard } from "@/components/ritual/RitualCard";
+import { TaskExamples } from "@/components/task/TaskExamples";
+import { Tip } from "@/components/Tip";
+import { AchievementToast } from "@/components/AchievementToast";
+import { awardAchievements } from "@/lib/achievements";
 import { signedUrls } from "@/lib/media";
 import { dayNumber } from "@/lib/dates";
 import { CoverHeader } from "@/components/blocks/CoverHeader";
@@ -36,9 +43,10 @@ const SIZE: Record<string, string> = {
 const TASK_FIELDS =
   "id,title,notes,due_date,due_time,priority,is_top,energy,estimate_min,labels,someday,recurrence_rule,postpone_count,completed_at,parent_id";
 
-export default async function HariIni({ searchParams }: { searchParams: Promise<{ atur?: string }> }) {
-  const { atur } = await searchParams;
+export default async function HariIni({ searchParams }: { searchParams: Promise<{ atur?: string; ritual?: string }> }) {
+  const { atur, ritual } = await searchParams;
   const { supabase, profile } = await requireProfile();
+  if (!profile.onboarded) redirect("/mulai");
   const tz = profile.timezone;
   const today = todayISO(tz);
 
@@ -64,7 +72,16 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
   const want = new Set(blocks.filter((b) => b.visible).map((b) => b.type));
   const { start: mStart, next: mNext } = monthRange(today.slice(0, 7));
   const showCover = !atur && profile.prefs.coverShow !== false;
-  const [fin, hab, trk, quotesRes, coversRes] = await Promise.all([
+  // Ritual pagi (04–11) / malam (19–04); bisa dipaksa lewat ?ritual= dari notifikasi.
+  const part = partOfDay(tz);
+  const ritualKind: "pagi" | "malam" | null = atur
+    ? null
+    : ritual === "pagi" || ritual === "malam"
+      ? ritual
+      : part === "pagi" || part === "malam" ? part : null;
+  const lifeOn = profile.enabled_modules.life !== false;
+  const tomorrow = addDays(today, 1);
+  const [fin, hab, trk, quotesRes, coversRes, tomorrowRes] = await Promise.all([
     want.has("finance")
       ? Promise.all([
           loadPrivacy(supabase),
@@ -72,16 +89,25 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
           supabase.from("budgets").select("category_id,amount").eq("month", mStart),
         ])
       : null,
-    want.has("habits") ? loadHabits(supabase, today, tz) : null,
+    want.has("habits") || (ritualKind && lifeOn) ? loadHabits(supabase, today, tz) : null,
     want.has("tracks") ? loadTracks(supabase, today, 4) : null,
     want.has("quote") ? supabase.from("quotes").select("id,text,author").eq("active", true).order("created_at") : null,
     showCover ? supabase.from("media").select("path").eq("kind", "cover").order("sort_order").order("created_at") : null,
+    ritualKind === "malam"
+      ? supabase.from("tasks").select("id", { count: "exact", head: true }).is("completed_at", null).eq("due_date", tomorrow)
+      : null,
   ]);
   const coverPaths = (coversRes?.data ?? []).map((c) => c.path as string);
   const coverPath = coverPaths.length
     ? coverPaths[profile.prefs.coverRotate === false ? 0 : dayNumber(today) % coverPaths.length]
     : null;
-  const coverUrl = coverPath ? (await signedUrls(supabase, [coverPath])).get(coverPath) : undefined;
+  const bestStreak = hab ? Math.max(0, ...hab.habits.map((h) => h.streak)) : null;
+  const [coverMap, newBadges] = await Promise.all([
+    coverPath ? signedUrls(supabase, [coverPath]) : null,
+    atur ? [] : awardAchievements(supabase, { createdAt: profile.created_at, bestHabitStreak: bestStreak }),
+  ]);
+  const coverUrl = coverPath ? coverMap?.get(coverPath) : undefined;
+  const ageDays = (Date.now() - Date.parse(profile.created_at)) / 864e5;
   const greet = greetingFor(profile.prefs, tz, profile.display_name ?? "kamu");
   const dayOf = (ts: string) => todayISO(tz, new Date(ts));
   const tasks = ((tasksRes.data ?? []) as Task[]).filter((t) => !t.completed_at || dayOf(t.completed_at) === today);
@@ -116,6 +142,31 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
           </header>
         );
       })()}
+
+      {ritualKind && (
+        <RitualCard
+          kind={ritualKind}
+          today={today}
+          forced={ritual === ritualKind}
+          identity={identities[0]?.text ?? null}
+          topCount={tasks.filter((t) => t.is_top).length}
+          habits={(hab?.habits ?? []).filter((h) => h.scheduledToday).map((h) => ({ id: h.id, name: h.name, icon: h.icon ?? null, today: h.today }))}
+          gratitudeCount={(gratRes.data ?? []).length}
+          tomorrowCount={tomorrowRes?.count ?? 0}
+        />
+      )}
+
+      <AchievementToast keys={newBadges} />
+
+      {!atur && ageDays >= 6 && ageDays < 21 && (
+        <Tip id="first-week-review">
+          Seminggu sudah kamu lewati. <Link href="/review" className="font-semibold text-accent">Buka Weekly Review pertamamu</Link> dan lihat sejauh apa jejakmu.
+        </Tip>
+      )}
+
+      {!atur && ageDays > 2 && (
+        <Tip id="dashboard-atur">Dashboard ini bisa kamu susun sendiri: ketuk <b>Atur dashboard</b> untuk menambah blok musik, kutipan, catatan, atau mengubah urutannya.</Tip>
+      )}
 
       {atur ? (
         <BlockEditor blocks={blocks} />
@@ -160,7 +211,7 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
                   {list.length ? (
                     <div>{list.map((t) => <TaskItem key={t.id} task={t} today={today} />)}</div>
                   ) : (
-                    <p className="py-2 text-sm text-muted">Tidak ada task lain hari ini.</p>
+                    tasks.length ? <p className="py-2 text-sm text-muted">Tidak ada task lain hari ini.</p> : <div className="py-2"><TaskExamples today={today} examples={["Minum segelas air", "Baca 10 halaman 20.00", "Rapikan meja kerja"]} /></div>
                   )}
                 </BlockCard>
               );
@@ -202,8 +253,9 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
                       <HabitToggle habitId={h.id} date={today} status={h.today} name={h.name} />
                       <Link href={`/manifestasi/habit/${h.id}`} className="flex min-w-0 flex-1 flex-col">
                         <span className="font-medium">{h.icon ? `${h.icon} ` : ""}{h.name}</span>
-                        {h.missed >= 1 && !h.today ? <span className="text-xs font-semibold text-warn">Jangan bolong dua kali</span> : h.two_min_version ? <span className="truncate text-xs text-muted">minimal: {h.two_min_version}</span> : null}
+                        {h.missed >= 1 && !h.today ? <span className="text-xs font-semibold text-warn">Jangan bolong dua kali{h.streak > 0 ? ` · centang hari ini, ${h.streak} langkah tetap aman` : ""}</span> : h.two_min_version ? <span className="truncate text-xs text-muted">minimal: {h.two_min_version}</span> : null}
                       </Link>
+                      {h.streak > 1 && <span className="flex items-center gap-0.5 text-xs font-semibold text-[#9a4a1e]" title="Streak (satu kali bolong masih aman)">🔥{h.streak}</span>}
                     </div>
                   )) : <p className="text-sm text-muted">Belum ada habit hari ini. <Link href="/manifestasi/habit/baru" className="font-semibold text-accent">Buat habit</Link></p>}
                 </BlockCard>

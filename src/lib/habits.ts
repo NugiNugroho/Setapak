@@ -67,6 +67,32 @@ export function missedStreak(h: Habit, logs: Map<string, HabitStatus>, today: st
   return n;
 }
 
+/**
+ * Streak yang memaafkan (aturan "jangan bolong dua kali"):
+ * menghitung hari terjadwal yang dikerjakan secara berturut-turut, di mana
+ * SATU kali bolong masih ditoleransi. Streak baru putus bila bolong dua kali
+ * berturut-turut. Hari ini tidak memutus streak selama belum lewat.
+ */
+export function habitStreak(h: Habit, logs: Map<string, HabitStatus>, today: string, createdDate: string) {
+  let streak = 0;
+  let gap = 0;
+  let graceUsed = false;
+  for (let d = today, i = 0; i < 400 && d >= createdDate; i++, d = addDays(d, -1)) {
+    if (!isScheduled(h, d)) continue;
+    if (kept(logs.get(d))) {
+      streak++;
+      gap = 0;
+    } else if (d === today) {
+      continue;
+    } else {
+      gap++;
+      if (gap >= 2) break;
+      if (streak === 0) graceUsed = true;
+    }
+  }
+  return { streak, graceUsed };
+}
+
 /** Saran level ala Goldilocks Rule: dari konsistensi 21 hari. */
 export function levelAdvice(c21: number | null, ageDays: number): "up" | "down" | "keep" | null {
   if (c21 == null || ageDays < 14) return null;

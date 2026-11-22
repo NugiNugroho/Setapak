@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { addDays } from "./dates";
-import { consistency, isScheduled, levelAdvice, missedStreak, type Habit, type HabitStatus } from "./habits";
+import { consistency, habitStreak, isScheduled, levelAdvice, missedStreak, type Habit, type HabitStatus } from "./habits";
 
 export type HabitView = Habit & {
   logs: Map<string, HabitStatus>;
@@ -9,6 +9,9 @@ export type HabitView = Habit & {
   c30: number | null;
   c21: number | null;
   missed: number;
+  /** Streak memaafkan: satu kali bolong masih aman. */
+  streak: number;
+  graceUsed: boolean;
   advice: ReturnType<typeof levelAdvice>;
   strip: { date: string; status: HabitStatus | "none" | "off" }[];
   createdDate: string;
@@ -48,6 +51,7 @@ export async function loadHabits(supabase: SupabaseClient, today: string, tz: st
       c30: consistency(hb, logs, today, 30, createdDate),
       c21,
       missed: missedStreak(hb, logs, today, createdDate),
+      ...habitStreak(hb, logs, today, createdDate),
       advice: levelAdvice(c21, age),
       strip: Array.from({ length: 30 }, (_, i) => {
         const date = addDays(today, i - 29);

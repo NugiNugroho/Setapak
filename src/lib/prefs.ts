@@ -8,6 +8,8 @@ export type Prefs = {
   sounds?: { enabled?: boolean; volume?: number };
   coverRotate?: boolean;
   coverShow?: boolean;
+  /** Pengingat harian (notifikasi push). Jam dalam format HH:MM waktu lokal. */
+  reminders?: { enabled?: boolean; morning?: string; evening?: string };
 };
 
 export const FONTS: Record<FontKey, { label: string; family: string; css: string | null }> = {

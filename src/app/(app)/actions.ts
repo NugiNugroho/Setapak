@@ -224,3 +224,12 @@ export async function deleteJournal(id: string) {
   await supabase.from("journal_entries").delete().eq("id", id);
   refresh();
 }
+
+// ---------------------------------------------------------------- Pencapaian
+
+/** Tandai penanda pencapaian sudah dirayakan. */
+export async function markAchievementsSeen(keys: string[]) {
+  const supabase = await ctx();
+  if (!keys.length) return;
+  await supabase.from("achievements").update({ seen: true }).in("key", keys.slice(0, 20));
+}
