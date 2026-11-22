@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Setapak
 
-## Getting Started
+> Rintik menjadi hujan, setapak menjadi jalan.
 
-First, run the development server:
+Aplikasi produktivitas pribadi (web + PWA untuk smartphone): task harian, keuangan, Life (identitas & habit ala *Atomic Habits*), dan Tracks. Setiap akun punya data sendiri yang terisolasi di level database (Supabase Row Level Security).
 
+**Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS 4 · Supabase (Postgres, Auth) · Vercel
+
+## Status
+
+| Fase | Isi | Status |
+| --- | --- | --- |
+| 1 · Fondasi | Auth (email & Google), skema database lengkap + RLS, navigasi desktop/HP, dashboard Hari Ini dengan blok yang bisa diatur, mode privasi, PWA | ✅ |
+| 2 · MVP | Task lengkap ✅ · Keuangan inti · Tracks dasar | 🚧 |
+| 3 | Keuangan lanjutan (tabungan, aset, hutang, net worth, field kustom), modul Life (identitas, habit, goal) | ⏳ |
+| 4 | Weekly Review, notifikasi, timer fokus, ekspor, offline | ⏳ |
+
+## Menjalankan
+
+### 1. Buat project Supabase
+1. Daftar di [supabase.com](https://supabase.com) → **New project** (region terdekat: Singapore).
+2. Buka **SQL Editor**, jalankan isi file berikut **berurutan**:
+   - `supabase/migrations/20261122000000_init.sql`
+   - `supabase/migrations/20261122000100_task_rollover.sql`
+
+   (Atau dengan Supabase CLI: `supabase link --project-ref <ref>` lalu `supabase db push`.)
+3. **Authentication → URL Configuration**
+   - Site URL: URL aplikasi (mis. `https://setapak.vercel.app`; saat lokal `http://localhost:3000`)
+   - Redirect URLs: tambahkan `https://<domain-kamu>/auth/callback` dan `http://localhost:3000/auth/callback`
+4. (Opsional) **Authentication → Providers → Google**: aktifkan dan isi Client ID/Secret dari Google Cloud Console.
+5. **Project Settings → API**: salin *Project URL* dan *anon/publishable key*.
+
+### 2. Lokal
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local   # isi URL & key dari langkah 1.5
+npm install
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Deploy ke Vercel
+1. [vercel.com](https://vercel.com) → **Add New → Project** → import repo `NugiNugroho/Setapak`.
+2. Isi Environment Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL` (URL Vercel-mu).
+3. Deploy. Setiap push ke `main` otomatis ter-deploy.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Pasang di HP
+Buka URL aplikasi di Chrome (Android) → menu ⋮ → **Tambahkan ke layar utama**. Di iPhone: Safari → Bagikan → **Tambah ke Layar Utama**.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Struktur
 
-## Learn More
+```
+src/
+  app/
+    (app)/            halaman setelah login: Hari Ini, task, keuangan, life, tracks, review, pengaturan
+    login/, auth/     masuk, daftar, callback OAuth, keluar
+  components/         navigasi, mode privasi, blok dashboard, task
+  lib/                klien Supabase, parser input task, tanggal, task berulang
+supabase/migrations/  skema database + RLS
+public/               manifest PWA, service worker, ikon
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Input cepat task
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`Revisi essay besok 10.00 #lpdp !1` → besok jam 10.00, label `lpdp`, prioritas 1.
+Kata yang dikenali: `hari ini`, `besok`, `lusa`, `senin`…`minggu`, `tgl 25`, `10.00`, `#label`, `!1`–`!4`, `setiap hari`, `setiap senin`, `setiap bulan`, `setiap 3 hari`, `someday`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Keamanan data
+Semua tabel memakai kebijakan `user_id = auth.uid()`; akun lain tidak bisa membaca atau menulis datamu meski memakai aplikasi yang sama. Mode privasi (ikon mata) hanya menyembunyikan tampilan nominal.
