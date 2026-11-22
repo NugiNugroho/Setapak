@@ -1,6 +1,6 @@
 # Setapak
 
-> Rintik menjadi hujan, setapak menjadi jalan.
+> Langkah kecil, jejak panjang.
 
 **Setapak** adalah aplikasi produktivitas pribadi untuk web dan HP yang menyatukan semua hal yang biasanya tercecer di banyak aplikasi: daftar tugas harian, catatan keuangan, kebiasaan yang ingin dibangun, dan progres hal yang sedang kamu tekuni.
 

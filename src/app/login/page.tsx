@@ -16,7 +16,7 @@ export default async function LoginPage({
           <Logo size={44} />
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Mulai setapak demi setapak</h1>
-            <p className="mt-1 text-sm text-muted">Rintik menjadi hujan, setapak menjadi jalan.</p>
+            <p className="mt-1 text-sm text-muted">Langkah kecil, jejak panjang.</p>
           </div>
         </div>
         <LoginForm initialError={error ? "Gagal masuk. Coba lagi." : undefined} />

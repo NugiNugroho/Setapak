@@ -56,7 +56,7 @@ export function Welcome({ userId, name }: { userId: string; name: string }) {
 
       <div className="flex flex-col items-center gap-2 text-center">
         <p className="welcome-line1 text-xl font-bold tracking-tight text-[#0B5A3C] sm:text-2xl">Selamat datang, {name}</p>
-        <p className="welcome-line2 text-sm text-[#4F5A52] sm:text-base">Rintik menjadi hujan, setapak menjadi jalan.</p>
+        <p className="welcome-line2 text-sm text-[#4F5A52] sm:text-base">Langkah kecil, jejak panjang.</p>
       </div>
 
       <div className="flex items-end gap-3" aria-hidden>
