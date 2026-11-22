@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { SESSION_KEY } from "@/components/Welcome";
 import { signIn, signUp, signInWithGoogle, type AuthState } from "./actions";
 
 export function LoginForm({ initialError }: { initialError?: string }) {
@@ -9,6 +10,11 @@ export function LoginForm({ initialError }: { initialError?: string }) {
     mode === "masuk" ? signIn : signUp,
     { error: initialError },
   );
+
+  // Setelah masuk, animasi sambutan diputar lagi.
+  useEffect(() => {
+    try { sessionStorage.removeItem(SESSION_KEY); } catch {}
+  }, []);
 
   return (
     <div className="flex flex-col gap-5">

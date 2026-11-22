@@ -3,11 +3,13 @@
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from "react";
 
-const KEY = (id: string) => `setapak.welcomed.${id}`;
+/** Penanda "sudah tampil di sesi ini" (hilang saat tab/aplikasi ditutup). */
+export const SESSION_KEY = "setapak.welcome.session";
 export const REPLAY_KEY = "setapak.welcome.replay";
 
 /**
- * Animasi sambutan saat pertama kali masuk (sekali per akun per perangkat).
+ * Animasi sambutan: tampil setiap kali website/aplikasi dibuka (sekali per sesi)
+ * dan setiap kali selesai masuk dengan email & password.
  * Ketuk di mana saja untuk melewati. Menghormati pengaturan "kurangi gerakan".
  */
 export function Welcome({ userId, name }: { userId: string; name: string }) {
@@ -17,9 +19,9 @@ export function Welcome({ userId, name }: { userId: string; name: string }) {
   useEffect(() => {
     try {
       const replay = sessionStorage.getItem(REPLAY_KEY);
-      if (replay || !localStorage.getItem(KEY(userId))) {
+      if (replay || sessionStorage.getItem(SESSION_KEY) !== userId) {
         sessionStorage.removeItem(REPLAY_KEY);
-        localStorage.setItem(KEY(userId), new Date().toISOString());
+        sessionStorage.setItem(SESSION_KEY, userId);
         setShow(true);
       }
     } catch {}
