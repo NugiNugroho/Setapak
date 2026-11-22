@@ -1,6 +1,7 @@
 import { Trash2 } from "lucide-react";
 import { requireProfile } from "@/lib/profile";
 import { loadPrivacy } from "@/lib/finance";
+import { ReplayWelcome } from "@/components/ReplayWelcome";
 import {
   saveProfile, savePrivacy, addAffirmation, toggleAffirmation, deleteAffirmation, addIdentity, deleteIdentity,
 } from "./actions";
@@ -146,6 +147,8 @@ export default async function Pengaturan() {
           <button className="btn">Tambah</button>
         </form>
       </Section>
+
+      <ReplayWelcome />
 
       <form action="/auth/signout" method="post">
         <button className="btn text-neg">Keluar</button>

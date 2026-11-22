@@ -1,7 +1,7 @@
 // Service worker sederhana Setapak:
 // - aset statis Next (/_next/static) di-cache (cache-first)
 // - navigasi halaman: network-first, jatuh ke halaman /offline saat tidak ada koneksi
-const CACHE = "setapak-v1";
+const CACHE = "setapak-v2";
 const OFFLINE = "/offline";
 
 self.addEventListener("install", (e) => {

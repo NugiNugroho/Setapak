@@ -141,3 +141,42 @@ body {
   opacity: 0.6;
   cursor: default;
 }
+
+/* ---------------------------------------------------------------
+   Animasi sambutan
+   --------------------------------------------------------------- */
+@keyframes welcome-pop {
+  0% { opacity: 0; transform: scale(0.55) rotate(-8deg); }
+  60% { opacity: 1; transform: scale(1.08) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes welcome-reveal {
+  from { clip-path: inset(0 100% 0 0); transform: translateX(-14px); opacity: 0.2; }
+  to { clip-path: inset(0 0 0 0); transform: translateX(0); opacity: 1; }
+}
+@keyframes welcome-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes welcome-step {
+  0% { opacity: 0; transform: translateY(6px) scaleX(0.4); }
+  100% { opacity: 1; transform: translateY(0) scaleX(1); }
+}
+@keyframes welcome-fade {
+  to { opacity: 0; transform: scale(1.02); }
+}
+.welcome-icon { animation: welcome-pop 0.8s cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.1s both; }
+.welcome-word { animation: welcome-reveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.75s both; }
+.welcome-line1 { animation: welcome-up 0.6s ease-out 1.5s both; }
+.welcome-line2 { animation: welcome-up 0.6s ease-out 1.8s both; }
+.welcome-step { animation: welcome-step 0.4s ease-out both; }
+.welcome-step:nth-child(2) { height: 0.75rem; }
+.welcome-step:nth-child(3) { height: 1rem; background: #F28C1B; }
+.welcome-cta { animation: welcome-up 0.5s ease-out 2.9s both; }
+.welcome-out { animation: welcome-fade 0.6s ease-in forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-icon, .welcome-word, .welcome-line1, .welcome-line2, .welcome-step, .welcome-cta {
+    animation: welcome-up 0.01s both !important;
+  }
+}

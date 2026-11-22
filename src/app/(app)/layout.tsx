@@ -1,6 +1,7 @@
 import { Sidebar, BottomNav } from "@/components/AppNav";
 import { PrivacyProvider } from "@/components/Privacy";
 import { ThemeSync } from "@/components/ThemeSync";
+import { Welcome } from "@/components/Welcome";
 import { requireProfile } from "@/lib/profile";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -15,6 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </main>
       </div>
       <BottomNav modules={profile.enabled_modules} />
+      <Welcome userId={profile.id} name={profile.display_name ?? "kamu"} />
     </PrivacyProvider>
   );
 }
