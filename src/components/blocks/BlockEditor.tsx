@@ -11,6 +11,9 @@ const TYPES: Record<string, string> = {
   tasks: "Daftar task",
   gratitude: "Gratitude",
   note: "Catatan bebas",
+  finance: "Ringkasan keuangan",
+  habits: "Habit hari ini",
+  tracks: "Tracks & streak",
 };
 
 export function BlockEditor({ blocks }: { blocks: Block[] }) {

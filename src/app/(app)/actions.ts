@@ -188,6 +188,9 @@ export async function addBlock(type: string) {
     tasks: { title: "Task hari ini", config: { filter: "today", showDone: true }, size: "md" },
     gratitude: { title: "Yang aku syukuri hari ini", config: { count: 3 }, size: "md" },
     note: { title: "Catatan", config: { text: "" }, size: "md" },
+    finance: { title: "Keuangan bulan ini", config: {}, size: "sm" },
+    habits: { title: "Habit hari ini", config: {}, size: "md" },
+    tracks: { title: "Tracks minggu ini", config: {}, size: "md" },
   };
   const d = defaults[type];
   if (!d) return;

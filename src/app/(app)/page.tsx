@@ -11,6 +11,13 @@ import { AffirmationBlock, pickAffirmation } from "@/components/blocks/Affirmati
 import { GratitudeBlock } from "@/components/blocks/GratitudeBlock";
 import { NoteBlock } from "@/components/blocks/NoteBlock";
 import { BlockEditor } from "@/components/blocks/BlockEditor";
+import { Money } from "@/components/Privacy";
+import { Bar } from "@/components/ui";
+import { HabitToggle } from "@/components/life/HabitToggle";
+import { loadPrivacy, monthRange, summarize, isOperational, TX_FIELDS, type Tx } from "@/lib/finance";
+import { loadHabits } from "@/lib/life-data";
+import { loadTracks, summarizeTrack } from "@/lib/tracks-data";
+import { formatMetric } from "@/lib/tracks";
 
 export const metadata = { title: "Hari Ini" };
 
@@ -48,6 +55,19 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
   ]);
 
   const blocks = (blocksRes.data ?? []) as Block[];
+  const want = new Set(blocks.filter((b) => b.visible).map((b) => b.type));
+  const { start: mStart, next: mNext } = monthRange(today.slice(0, 7));
+  const [fin, hab, trk] = await Promise.all([
+    want.has("finance")
+      ? Promise.all([
+          loadPrivacy(supabase),
+          supabase.from("transactions").select(TX_FIELDS).gte("tx_date", mStart).lt("tx_date", mNext),
+          supabase.from("budgets").select("category_id,amount").eq("month", mStart),
+        ])
+      : null,
+    want.has("habits") ? loadHabits(supabase, today, tz) : null,
+    want.has("tracks") ? loadTracks(supabase, today, 4) : null,
+  ]);
   const dayOf = (ts: string) => todayISO(tz, new Date(ts));
   const tasks = ((tasksRes.data ?? []) as Task[]).filter((t) => !t.completed_at || dayOf(t.completed_at) === today);
   const areaName = (r: { life_areas: unknown }) =>
@@ -125,6 +145,63 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
               );
             } else if (b.type === "gratitude") {
               el = <GratitudeBlock title={title} entries={gratRes.data ?? []} count={Number(cfg.count ?? 3)} today={today} />;
+            } else if (b.type === "finance" && fin) {
+              const [priv, txRes, budRes] = fin;
+              const txs = (txRes.data ?? []) as Tx[];
+              const sum = summarize(txs);
+              const budgeted = new Set((budRes.data ?? []).map((x) => x.category_id));
+              const totalBudget = (budRes.data ?? []).reduce((a, x) => a + Number(x.amount), 0);
+              const spentBudget = txs.filter((t) => t.kind === "expense" && isOperational(t) && t.category_id && budgeted.has(t.category_id)).reduce((a, t) => a + t.amount, 0);
+              el = (
+                <BlockCard title={title} aside={<Link href="/keuangan" className="font-semibold text-accent">Buka</Link>}>
+                  {totalBudget > 0 ? (
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-xs text-muted">Sisa budget</span>
+                      <span className="text-2xl font-bold tracking-tight"><Money amount={totalBudget - spentBudget} sensitive={priv.transactions} /></span>
+                      <Bar pct={(spentBudget / totalBudget) * 100} color={spentBudget > totalBudget ? "var(--neg)" : "var(--accent)"} height={8} />
+                      <span className="text-xs text-muted">{Math.round((spentBudget / totalBudget) * 100)}% terpakai</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-1"><span className="text-xs text-muted">Selisih bulan ini</span><span className="text-2xl font-bold"><Money amount={sum.net} sensitive={priv.transactions} sign /></span></div>
+                  )}
+                  <div className="flex justify-between border-t border-line-soft pt-2 text-sm">
+                    <span>Masuk <b className="text-pos"><Money amount={sum.income} sensitive={priv.transactions} /></b></span>
+                    <span>Keluar <b><Money amount={sum.expense} sensitive={priv.transactions} /></b></span>
+                  </div>
+                  <Link href="/keuangan/transaksi/baru?back=/" className="btn min-h-10 text-sm">+ Catat transaksi</Link>
+                </BlockCard>
+              );
+            } else if (b.type === "habits" && hab) {
+              const list = hab.habits.filter((h) => h.scheduledToday);
+              const kept = list.filter((h) => h.today).length;
+              el = (
+                <BlockCard title={title} aside={list.length ? `${kept}/${list.length}` : undefined}>
+                  {list.length ? list.map((h) => (
+                    <div key={h.id} className="flex min-h-12 items-center gap-2 border-t border-line-soft first:border-t-0">
+                      <HabitToggle habitId={h.id} date={today} status={h.today} name={h.name} />
+                      <Link href={`/life/habit/${h.id}`} className="flex min-w-0 flex-1 flex-col">
+                        <span className="font-medium">{h.name}</span>
+                        {h.missed >= 1 && !h.today ? <span className="text-xs font-semibold text-warn">Jangan bolong dua kali</span> : h.two_min_version ? <span className="truncate text-xs text-muted">minimal: {h.two_min_version}</span> : null}
+                      </Link>
+                    </div>
+                  )) : <p className="text-sm text-muted">Belum ada habit hari ini. <Link href="/life/habit/baru" className="font-semibold text-accent">Buat habit</Link></p>}
+                </BlockCard>
+              );
+            } else if (b.type === "tracks" && trk) {
+              const rows = trk.tracks.map((t) => summarizeTrack(t, trk.metrics.filter((m) => m.track_id === t.id), trk.logs.filter((l) => l.track_id === t.id), today, 4));
+              el = (
+                <BlockCard title={title} aside={<Link href="/tracks" className="font-semibold text-accent">Semua</Link>}>
+                  {rows.length ? rows.map((s) => (
+                    <Link key={s.track.id} href={`/tracks/${s.track.id}`} className="flex flex-col gap-1.5 border-t border-line-soft pt-2.5 first:border-t-0 first:pt-0">
+                      <div className="flex justify-between text-sm">
+                        <span className="flex items-center gap-2 font-medium"><span className="size-2.5 rounded-full" style={{ background: s.track.color }} />{s.track.name}</span>
+                        <span className="text-xs text-muted">{s.current ? `${s.current} hari · ` : ""}{formatMetric(s.periodValue, s.primary)}{s.primary.target ? ` / ${formatMetric(s.primary.target, s.primary)}` : ""}</span>
+                      </div>
+                      {s.pct != null && <Bar pct={s.pct} />}
+                    </Link>
+                  )) : <p className="text-sm text-muted">Belum ada track. <Link href="/tracks" className="font-semibold text-accent">Buat track</Link></p>}
+                </BlockCard>
+              );
             } else if (b.type === "note") {
               el = <NoteBlock id={b.id} title={title} text={String(cfg.text ?? "")} />;
             }

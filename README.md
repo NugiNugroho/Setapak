@@ -8,12 +8,16 @@ Aplikasi produktivitas pribadi (web + PWA untuk smartphone): task harian, keuang
 
 ## Status
 
-| Fase | Isi | Status |
-| --- | --- | --- |
-| 1 · Fondasi | Auth (email & Google), skema database lengkap + RLS, navigasi desktop/HP, dashboard Hari Ini dengan blok yang bisa diatur, mode privasi, PWA | ✅ |
-| 2 · MVP | Task lengkap ✅ · Keuangan inti · Tracks dasar | 🚧 |
-| 3 | Keuangan lanjutan (tabungan, aset, hutang, net worth, field kustom), modul Life (identitas, habit, goal) | ⏳ |
-| 4 | Weekly Review, notifikasi, timer fokus, ekspor, offline | ⏳ |
+| Modul | Isi |
+| --- | --- |
+| Hari Ini | Dashboard blok yang bisa diatur: afirmasi/identitas, prioritas, task, gratitude, catatan, keuangan, habit, tracks |
+| Task | Input cepat berbahasa Indonesia, berulang, carry-over, label, prioritas utama |
+| Keuangan | Ringkasan bulanan, transaksi + field kustom + template, dompet, kategori, budget, tabungan, aset, hutang/piutang, net worth, mode privasi, ekspor CSV |
+| Tracks | Metrik kustom, log sesi, timer fokus, heatmap, streak, target |
+| Life | Identitas & suara, habit Empat Hukum, habit stack, never miss twice, level, goal & milestone, scorecard, refleksi, Annual Review |
+| Weekly Review | Ringkasan otomatis mingguan, refleksi, 3 prioritas jadi task, arsip |
+
+Rencana berikutnya: PIN untuk nominal tersembunyi, notifikasi push, vision board bergambar, mode offline penuh.
 
 ## Menjalankan
 
@@ -22,6 +26,7 @@ Aplikasi produktivitas pribadi (web + PWA untuk smartphone): task harian, keuang
 2. Buka **SQL Editor**, jalankan isi file berikut **berurutan**:
    - `supabase/migrations/20261122000000_init.sql`
    - `supabase/migrations/20261122000100_task_rollover.sql`
+   - `supabase/migrations/20261122000200_finance_views.sql`
 
    (Atau dengan Supabase CLI: `supabase link --project-ref <ref>` lalu `supabase db push`.)
 3. **Authentication → URL Configuration**
