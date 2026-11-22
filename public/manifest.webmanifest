@@ -1,7 +1,8 @@
 {
   "name": "Setapak",
   "short_name": "Setapak",
-  "description": "Rintik menjadi hujan, setapak menjadi jalan.",
+  "description": "Satu tempat untuk task, keuangan, kebiasaan, dan progresmu: setapak demi setapak.",
+  "categories": ["productivity", "finance", "lifestyle"],
   "lang": "id",
   "start_url": "/",
   "scope": "/",

@@ -4,7 +4,9 @@ import { ServiceWorker } from "@/components/ServiceWorker";
 
 export const metadata: Metadata = {
   title: { default: "Setapak", template: "%s · Setapak" },
-  description: "Rintik menjadi hujan, setapak menjadi jalan.",
+  description: "Setapak menyatukan task harian, pencatatan keuangan, manifestasi kebiasaan ala Atomic Habits, dan progres hal yang kamu tekuni dalam satu aplikasi untuk web dan HP.",
+  applicationName: "Setapak",
+  openGraph: { title: "Setapak", description: "Setapak menyatukan task harian, pencatatan keuangan, manifestasi kebiasaan ala Atomic Habits, dan progres hal yang kamu tekuni dalam satu aplikasi untuk web dan HP.", siteName: "Setapak", locale: "id_ID", type: "website" },
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "Setapak", statusBarStyle: "default" },
   icons: {

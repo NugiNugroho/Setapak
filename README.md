@@ -2,7 +2,19 @@
 
 > Rintik menjadi hujan, setapak menjadi jalan.
 
-Aplikasi produktivitas pribadi (web + PWA untuk smartphone): task harian, keuangan, Life (identitas & habit ala *Atomic Habits*), dan Tracks. Setiap akun punya data sendiri yang terisolasi di level database (Supabase Row Level Security).
+**Setapak** adalah aplikasi produktivitas pribadi untuk web dan HP yang menyatukan semua hal yang biasanya tercecer di banyak aplikasi: daftar tugas harian, catatan keuangan, kebiasaan yang ingin dibangun, dan progres hal yang sedang kamu tekuni.
+
+Filosofinya sederhana: perubahan besar lahir dari langkah kecil yang dilakukan terus-menerus. Setapak dirancang supaya setiap langkah kecil itu mudah dicatat, terlihat hasilnya, dan terhubung dengan tujuan yang lebih besar, dari **visi → goal → habit → task harian → progres**.
+
+### Yang bisa dilakukan
+- **Hari Ini**: dashboard yang bisa disusun sendiri: afirmasi atau identitas, 3 prioritas utama, task, gratitude, ringkasan keuangan, habit, dan streak.
+- **Task**: tulis seperti bicara (`Revisi essay besok 10.00 #lpdp !1`), task berulang, dan task terlewat yang pindah otomatis dengan penanda "sering ditunda".
+- **Keuangan**: pemasukan, pengeluaran, transfer, budget per kategori, tabungan, aset, hutang/piutang, dan net worth. Field transaksi bisa diatur sendiri, nominal sensitif bisa disembunyikan, dan data bisa diekspor ke CSV.
+- **Manifestasi**: bangun identitas lewat kebiasaan kecil ala *Atomic Habits*: Empat Hukum, habit stack, versi 2 menit, "jangan bolong dua kali", saran naik level, visi & goal, scorecard, dan refleksi.
+- **Tracks**: ukur progres hal yang ditekuni dengan metrik sendiri, timer fokus, heatmap, dan streak.
+- **Weekly Review**: rangkuman mingguan otomatis, refleksi, dan 3 prioritas minggu depan yang langsung jadi task.
+
+Setiap akun punya data sendiri yang terkunci di level database, dan aplikasinya bisa dipasang di layar utama HP seperti aplikasi biasa.
 
 **Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS 4 · Supabase (Postgres, Auth) · Vercel
 
