@@ -24,8 +24,14 @@ export async function updateSession(request: NextRequest) {
   });
 
   // getClaims memverifikasi JWT secara lokal dan tetap menyegarkan sesi bila perlu.
-  const { data } = await supabase.auth.getClaims();
-  const user = data?.claims?.sub ?? null;
+  let user: string | null = null;
+  try {
+    const { data } = await supabase.auth.getClaims();
+    user = data?.claims?.sub ?? null;
+  } catch {
+    // Token rusak/kedaluwarsa atau sesi dari project Supabase lama: anggap belum masuk.
+    user = null;
+  }
 
   const path = request.nextUrl.pathname;
   const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith(p + "/"));
