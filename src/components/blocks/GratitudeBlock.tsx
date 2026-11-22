@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { addGratitude, deleteJournal } from "@/app/(app)/actions";
 import { BlockCard } from "./BlockCard";
 
-export function GratitudeBlock({ title, entries, count }: { title: string; entries: { id: string; body: string }[]; count: number }) {
+export function GratitudeBlock({ title, entries, count, today }: { title: string; entries: { id: string; body: string }[]; count: number; today: string }) {
   const [value, setValue] = useState("");
   const [pending, start] = useTransition();
   return (
@@ -27,7 +27,7 @@ export function GratitudeBlock({ title, entries, count }: { title: string; entri
             e.preventDefault();
             const v = value;
             setValue("");
-            start(() => addGratitude(v));
+            start(() => addGratitude(v, today));
           }}
           className="flex items-center gap-2.5 rounded-[10px] border border-dashed border-line px-3"
         >

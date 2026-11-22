@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useRef, useState, useTransition } from "react";
 import { Plus } from "lucide-react";
 import { quickAddTask } from "@/app/(app)/actions";
 import { parseTaskInput } from "@/lib/parse-task";
@@ -22,7 +22,8 @@ export function QuickAdd({
 }) {
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [pending, start] = useTransition();
+  const [, start] = useTransition();
+  const [saving, addSaving] = useOptimistic<string[], string>([], (list, t) => [...list, t]);
   const ref = useRef<HTMLInputElement>(null);
   const parsed = useMemo(() => (value.trim() ? parseTaskInput(value, today) : null), [value, today]);
 
@@ -32,7 +33,8 @@ export function QuickAdd({
     const v = value;
     setValue("");
     start(async () => {
-      const res = await quickAddTask(v, { defaultToday, top });
+      addSaving(parseTaskInput(v, today).title);
+      const res = await quickAddTask(v, { defaultToday, top, today });
       if (res?.error) {
         setError(res.error);
         setValue(v);
@@ -67,10 +69,9 @@ export function QuickAdd({
           autoFocus={autoFocus}
           placeholder={placeholder}
           className="min-h-10 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted"
-          disabled={pending}
         />
         {value && (
-          <button className="btn btn-primary min-h-9 px-3 text-sm" disabled={pending}>
+          <button className="btn btn-primary min-h-9 px-3 text-sm">
             Simpan
           </button>
         )}
@@ -83,6 +84,13 @@ export function QuickAdd({
           ))}
         </div>
       )}
+      {saving.map((t, i) => (
+        <div key={i} className="flex items-center gap-3 py-1 text-sm text-muted" aria-live="polite">
+          <span className="size-[18px] shrink-0 animate-pulse rounded-[6px] border-[1.5px] border-line" />
+          <span className="flex-1">{t}</span>
+          <span className="text-xs">menyimpan…</span>
+        </div>
+      ))}
       {error && <p className="text-xs text-neg">{error}</p>}
     </form>
   );

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireProfile } from "@/lib/profile";
+import { getUser } from "@/lib/supabase/server";
 import { parseTaskInput } from "@/lib/parse-task";
 import { nextDue, type Recurrence } from "@/lib/recurrence";
 import { todayISO } from "@/lib/dates";
@@ -10,13 +10,25 @@ function refresh() {
   revalidatePath("/", "layout");
 }
 
+/** Konteks ringan untuk aksi: cukup klien + cek login (tanpa query profil). */
+async function ctx() {
+  const { supabase, user } = await getUser();
+  if (!user) throw new Error("Belum masuk");
+  return supabase;
+}
+
+const isISODate = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
+
 // ---------------------------------------------------------------- Task
 
-export async function quickAddTask(input: string, opts: { top?: boolean; defaultToday?: boolean } = {}) {
+export async function quickAddTask(
+  input: string,
+  opts: { top?: boolean; defaultToday?: boolean; today?: string } = {},
+) {
   const text = input.trim();
   if (!text) return { error: "Task kosong" };
-  const { supabase, profile } = await requireProfile();
-  const today = todayISO(profile.timezone);
+  const supabase = await ctx();
+  const today = isISODate(opts.today) ? opts.today : todayISO();
   const p = parseTaskInput(text, today);
   const { error } = await supabase.from("tasks").insert({
     title: p.title,
@@ -33,8 +45,9 @@ export async function quickAddTask(input: string, opts: { top?: boolean; default
   return { ok: true };
 }
 
-export async function toggleTask(id: string, done: boolean) {
-  const { supabase, profile } = await requireProfile();
+export async function toggleTask(id: string, done: boolean, clientToday?: string) {
+  const supabase = await ctx();
+  const today = isISODate(clientToday) ? clientToday : todayISO();
   const { data: task, error } = await supabase
     .from("tasks")
     .update({ completed_at: done ? new Date().toISOString() : null })
@@ -46,7 +59,7 @@ export async function toggleTask(id: string, done: boolean) {
   // Task berulang: buat kemunculan berikutnya saat diselesaikan.
   if (done && task.recurrence_rule) {
     const rule = task.recurrence_rule as Recurrence;
-    const base = rule.type === "interval" ? todayISO(profile.timezone) : task.due_date ?? todayISO(profile.timezone);
+    const base = rule.type === "interval" ? today : task.due_date ?? today;
     const { data: existing } = await supabase
       .from("tasks")
       .select("id")
@@ -75,13 +88,13 @@ export async function toggleTask(id: string, done: boolean) {
 }
 
 export async function setTaskTop(id: string, top: boolean) {
-  const { supabase } = await requireProfile();
+  const supabase = await ctx();
   await supabase.from("tasks").update({ is_top: top }).eq("id", id);
   refresh();
 }
 
 export async function updateTask(id: string, form: FormData) {
-  const { supabase } = await requireProfile();
+  const supabase = await ctx();
   const str = (k: string) => {
     const v = String(form.get(k) ?? "").trim();
     return v === "" ? null : v;
@@ -120,17 +133,16 @@ export async function updateTask(id: string, form: FormData) {
 }
 
 export async function deleteTask(id: string) {
-  const { supabase } = await requireProfile();
+  const supabase = await ctx();
   await supabase.from("tasks").delete().eq("id", id);
   refresh();
 }
 
-export async function postponeTask(id: string) {
-  const { supabase, profile } = await requireProfile();
+export async function postponeTask(id: string, clientToday?: string) {
+  const supabase = await ctx();
   const { data } = await supabase.from("tasks").select("postpone_count").eq("id", id).single();
-  const tomorrow = new Date(Date.parse(todayISO(profile.timezone) + "T00:00:00Z") + 864e5)
-    .toISOString()
-    .slice(0, 10);
+  const today = isISODate(clientToday) ? clientToday : todayISO();
+  const tomorrow = new Date(Date.parse(today + "T00:00:00Z") + 864e5).toISOString().slice(0, 10);
   await supabase
     .from("tasks")
     .update({ due_date: tomorrow, postpone_count: (data?.postpone_count ?? 0) + 1 })
@@ -141,7 +153,7 @@ export async function postponeTask(id: string) {
 // ---------------------------------------------------------------- Dashboard
 
 export async function moveBlock(id: string, dir: -1 | 1) {
-  const { supabase } = await requireProfile();
+  const supabase = await ctx();
   const { data: blocks } = await supabase
     .from("dashboard_blocks")
     .select("id, position")
@@ -159,7 +171,7 @@ export async function moveBlock(id: string, dir: -1 | 1) {
 }
 
 export async function updateBlock(id: string, patch: { title?: string; visible?: boolean; size?: string; config?: Record<string, unknown> }) {
-  const { supabase } = await requireProfile();
+  const supabase = await ctx();
   if (patch.config) {
     const { data } = await supabase.from("dashboard_blocks").select("config").eq("id", id).single();
     patch.config = { ...(data?.config ?? {}), ...patch.config };
@@ -169,7 +181,7 @@ export async function updateBlock(id: string, patch: { title?: string; visible?:
 }
 
 export async function addBlock(type: string) {
-  const { supabase } = await requireProfile();
+  const supabase = await ctx();
   const defaults: Record<string, { title: string; config: Record<string, unknown>; size: string }> = {
     affirmation: { title: "Afirmasi hari ini", config: { source: "affirmations", mode: "sequential", rotate: "daily" }, size: "lg" },
     priorities: { title: "Prioritas utama", config: { count: 3 }, size: "md" },
@@ -185,23 +197,25 @@ export async function addBlock(type: string) {
 }
 
 export async function deleteBlock(id: string) {
-  const { supabase } = await requireProfile();
+  const supabase = await ctx();
   await supabase.from("dashboard_blocks").delete().eq("id", id);
   refresh();
 }
 
 // ---------------------------------------------------------------- Gratitude
 
-export async function addGratitude(body: string) {
+export async function addGratitude(body: string, clientToday?: string) {
   const text = body.trim();
   if (!text) return;
-  const { supabase, profile } = await requireProfile();
-  await supabase.from("journal_entries").insert({ kind: "gratitude", body: text, entry_date: todayISO(profile.timezone) });
+  const supabase = await ctx();
+  await supabase
+    .from("journal_entries")
+    .insert({ kind: "gratitude", body: text, entry_date: isISODate(clientToday) ? clientToday : todayISO() });
   refresh();
 }
 
 export async function deleteJournal(id: string) {
-  const { supabase } = await requireProfile();
+  const supabase = await ctx();
   await supabase.from("journal_entries").delete().eq("id", id);
   refresh();
 }

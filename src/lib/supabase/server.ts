@@ -23,11 +23,17 @@ export async function createClient() {
   });
 }
 
-/** User yang sedang login, atau null. */
+/**
+ * User yang sedang login, atau null.
+ * Memakai getClaims(): token diverifikasi lokal (kunci JWT asimetris) tanpa
+ * bolak-balik ke server Auth, sehingga jauh lebih cepat daripada getUser().
+ */
 export async function getUser() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  const user = claims?.sub
+    ? { id: claims.sub as string, email: (claims.email as string | undefined) ?? undefined }
+    : null;
   return { supabase, user };
 }

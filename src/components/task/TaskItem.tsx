@@ -23,7 +23,7 @@ export function TaskItem({ task, today, showDate = false }: { task: Task; today:
         <button
           type="button"
           aria-label={done ? `Tandai belum selesai: ${task.title}` : `Selesaikan: ${task.title}`}
-          onClick={() => start(async () => { setDone(!done); await toggleTask(task.id, !done); })}
+          onClick={() => start(async () => { setDone(!done); await toggleTask(task.id, !done, today); })}
           className="-ml-2 flex size-11 shrink-0 items-center justify-center"
         >
           <span
@@ -97,7 +97,7 @@ export function TaskItem({ task, today, showDate = false }: { task: Task; today:
           <label className="flex items-center gap-2"><input type="checkbox" name="someday" defaultChecked={task.someday} className="size-4 accent-[var(--accent)]" />Someday</label>
           <div className="col-span-2 mt-1 flex flex-wrap items-center justify-between gap-2">
             <div className="flex gap-2">
-              <button type="button" className="btn min-h-9 text-sm" disabled={pending} onClick={() => start(async () => { await postponeTask(task.id); setOpen(false); })}>
+              <button type="button" className="btn min-h-9 text-sm" disabled={pending} onClick={() => start(async () => { await postponeTask(task.id, today); setOpen(false); })}>
                 <CalendarClock size={15} aria-hidden />Tunda ke besok
               </button>
               <button type="button" className="btn min-h-9 text-sm text-neg" disabled={pending} onClick={() => start(() => deleteTask(task.id))}>

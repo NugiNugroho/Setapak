@@ -29,10 +29,10 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
   const tz = profile.timezone;
   const today = todayISO(tz);
 
-  // Task yang terlewat dipindah ke hari ini (postpone_count bertambah).
-  await supabase.rpc("rollover_tasks", { p_today: today });
-
-  const [blocksRes, tasksRes, affRes, idRes, gratRes] = await Promise.all([
+  // Semua query jalan paralel. Carry-over task terlewat ikut berjalan bersamaan;
+  // query task sudah memakai due_date <= hari ini, jadi task terlewat tetap tampil.
+  const [, blocksRes, tasksRes, affRes, idRes, gratRes] = await Promise.all([
+    supabase.rpc("rollover_tasks", { p_today: today }),
     supabase.from("dashboard_blocks").select("*").order("position"),
     supabase
       .from("tasks")
@@ -124,7 +124,7 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
                 </BlockCard>
               );
             } else if (b.type === "gratitude") {
-              el = <GratitudeBlock title={title} entries={gratRes.data ?? []} count={Number(cfg.count ?? 3)} />;
+              el = <GratitudeBlock title={title} entries={gratRes.data ?? []} count={Number(cfg.count ?? 3)} today={today} />;
             } else if (b.type === "note") {
               el = <NoteBlock id={b.id} title={title} text={String(cfg.text ?? "")} />;
             }

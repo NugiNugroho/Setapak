@@ -22,7 +22,7 @@ export default async function TaskPage({ searchParams }: { searchParams: Promise
   const { v = "hari-ini", baru, label } = await searchParams;
   const { supabase, profile } = await requireProfile();
   const today = todayISO(profile.timezone);
-  await supabase.rpc("rollover_tasks", { p_today: today });
+  const rollover = supabase.rpc("rollover_tasks", { p_today: today });
 
   let q = supabase.from("tasks").select(FIELDS).is("parent_id", null);
   if (v === "selesai") q = q.not("completed_at", "is", null).order("completed_at", { ascending: false }).limit(50);
@@ -36,7 +36,8 @@ export default async function TaskPage({ searchParams }: { searchParams: Promise
   }
   if (label) q = q.contains("labels", [label]);
 
-  const [{ data }, counts] = await Promise.all([
+  const [, { data }, counts] = await Promise.all([
+    rollover,
     q,
     Promise.all([
       supabase.from("tasks").select("id", { count: "exact", head: true }).is("completed_at", null).is("parent_id", null).lte("due_date", today).eq("someday", false),
