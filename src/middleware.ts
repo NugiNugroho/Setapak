@@ -6,13 +6,15 @@ export async function middleware(request: NextRequest) {
     return await updateSession(request);
   } catch (e) {
     // Tampilkan penyebab yang bisa ditindaklanjuti, bukan error 500 kosong.
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
+    const key =
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+      process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
     const problems: string[] = [];
-    if (!url) problems.push("NEXT_PUBLIC_SUPABASE_URL belum diisi");
-    else if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(url)) problems.push(`NEXT_PUBLIC_SUPABASE_URL formatnya tidak dikenali (harus seperti https://xxxx.supabase.co)`);
-    if (!key) problems.push("NEXT_PUBLIC_SUPABASE_ANON_KEY belum diisi");
-    else if (!/^(eyJ|sb_publishable_)/.test(key)) problems.push("NEXT_PUBLIC_SUPABASE_ANON_KEY bukan kunci anon/publishable (harus diawali eyJ… atau sb_publishable_…)");
+    if (!url) problems.push("SUPABASE_URL / NEXT_PUBLIC_SUPABASE_URL belum diisi");
+    else if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(url)) problems.push(`URL Supabase formatnya tidak dikenali (harus seperti https://xxxx.supabase.co)`);
+    if (!key) problems.push("SUPABASE_PUBLISHABLE_KEY / NEXT_PUBLIC_SUPABASE_ANON_KEY belum diisi");
+    else if (!/^(eyJ|sb_publishable_)/.test(key)) problems.push("Kunci Supabase bukan kunci anon/publishable (harus diawali eyJ… atau sb_publishable_…)");
     const detail = problems.length ? problems : [`Gagal menghubungi Supabase: ${e instanceof Error ? e.message : String(e)}`];
     const html = `<!doctype html><html lang="id"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Setapak · konfigurasi</title>
 <body style="font-family:system-ui,sans-serif;max-width:560px;margin:48px auto;padding:0 20px;color:#1c1c1a">
