@@ -9,7 +9,7 @@ import { LifeNav } from "@/components/life/LifeNav";
 import { HabitToggle } from "@/components/life/HabitToggle";
 import { addIdentity, setHabitLevel } from "./actions";
 
-export const metadata = { title: "Life" };
+export const metadata = { title: "Manifestasi" };
 
 const STRIP = { done: "var(--accent)", minimal: "#93BFB2", missed: "#F3D3CA", none: "#F3D3CA", off: "var(--line-soft)" } as const;
 
@@ -37,8 +37,8 @@ export default async function LifePage() {
     <div className="flex flex-col gap-5">
       <PageHeader
         eyebrow="Setiap tindakan adalah suara untuk orang yang ingin kamu jadi"
-        title="Life"
-        actions={<Link href="/life/habit/baru" className="btn btn-primary"><Plus size={16} aria-hidden />Habit baru</Link>}
+        title="Manifestasi"
+        actions={<Link href="/manifestasi/habit/baru" className="btn btn-primary"><Plus size={16} aria-hidden />Habit baru</Link>}
       />
       <LifeNav current="ringkasan" />
 
@@ -90,7 +90,7 @@ export default async function LifePage() {
               {g.items.map((h) => (
                 <div key={h.id} className="flex min-h-14 items-center gap-2 border-t border-line-soft first:border-t-0">
                   <HabitToggle habitId={h.id} date={today} status={h.today} name={h.name} />
-                  <Link href={`/life/habit/${h.id}`} className="flex min-w-0 flex-1 flex-col py-2">
+                  <Link href={`/manifestasi/habit/${h.id}`} className="flex min-w-0 flex-1 flex-col py-2">
                     <span className={`font-semibold ${h.kind === "break" ? "text-ink-2" : ""}`}>{h.kind === "break" ? `Tidak ${h.name.charAt(0).toLowerCase()}${h.name.slice(1)}` : h.name}</span>
                     <span className="truncate text-xs text-muted">
                       {h.today === "minimal" ? `Versi 2 menit: ${h.two_min_version ?? "—"}` : [h.full_version, h.two_min_version && `minimal: ${h.two_min_version}`].filter(Boolean).join(" · ") || describeFrequency(h.frequency)}
@@ -100,7 +100,7 @@ export default async function LifePage() {
                 </div>
               ))}
             </div>
-          )) : <Empty>{habits.length ? "Tidak ada habit terjadwal hari ini." : <>Belum ada habit. <Link href="/life/habit/baru" className="font-semibold text-accent">Buat yang pertama</Link></>}</Empty>}
+          )) : <Empty>{habits.length ? "Tidak ada habit terjadwal hari ini." : <>Belum ada habit. <Link href="/manifestasi/habit/baru" className="font-semibold text-accent">Buat yang pertama</Link></>}</Empty>}
           {todayHabits.length > 0 && <p className="text-xs text-muted">Ketuk kotak: belum → selesai → versi 2 menit → belum.</p>}
         </Card>
 
@@ -138,9 +138,9 @@ export default async function LifePage() {
       </div>
 
       {habits.length > 0 && (
-        <Card title="Konsistensi · 30 hari" aside={<Link href="/life/habit/baru" className="font-semibold text-accent">+ Habit</Link>}>
+        <Card title="Konsistensi · 30 hari" aside={<Link href="/manifestasi/habit/baru" className="font-semibold text-accent">+ Habit</Link>}>
           {habits.map((h) => (
-            <Link key={h.id} href={`/life/habit/${h.id}`} className="flex flex-wrap items-center gap-3 border-t border-line-soft py-2.5 first:border-t-0">
+            <Link key={h.id} href={`/manifestasi/habit/${h.id}`} className="flex flex-wrap items-center gap-3 border-t border-line-soft py-2.5 first:border-t-0">
               <span className="flex min-w-[180px] flex-1 flex-col">
                 <span className="font-semibold">{h.name}</span>
                 <span className="text-xs text-muted">{identities.find((i) => i.id === h.identity_id)?.statement ?? ""} · Level {h.level} · {describeFrequency(h.frequency)}</span>

@@ -2,7 +2,7 @@
 
 import { useOptimistic, useTransition } from "react";
 import { Check } from "lucide-react";
-import { setHabitStatus } from "@/app/(app)/life/actions";
+import { setHabitStatus } from "@/app/(app)/manifestasi/actions";
 import type { HabitStatus } from "@/lib/habits";
 
 const NEXT: Record<string, HabitStatus | null> = { none: "done", done: "minimal", minimal: null, missed: "done" };

@@ -28,7 +28,7 @@ export default async function Refleksi() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader eyebrow="Life" title="Refleksi" />
+      <PageHeader eyebrow="Manifestasi" title="Refleksi" />
       <LifeNav current="refleksi" />
 
       <Card title="Tulis">

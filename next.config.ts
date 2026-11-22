@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Modul Life berganti nama menjadi Manifestasi; tautan lama tetap berfungsi.
+  async redirects() {
+    return [{ source: "/life/:path*", destination: "/manifestasi/:path*", permanent: true }];
+  },
 };
 
 export default nextConfig;

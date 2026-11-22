@@ -56,7 +56,7 @@ export default async function Pengaturan() {
         <Section title="Modul aktif">
           {(["task", "keuangan", "life", "tracks"] as const).map((m) => (
             <label key={m} className="flex min-h-12 items-center justify-between border-t border-line-soft first:border-t-0">
-              <span className="capitalize">{m}</span>
+              <span>{({ task: "Task", keuangan: "Keuangan", life: "Manifestasi", tracks: "Tracks" } as Record<string, string>)[m]}</span>
               <input type="checkbox" name={`mod_${m}`} defaultChecked={profile.enabled_modules[m] !== false} className="size-5 accent-[var(--accent)]" />
             </label>
           ))}
@@ -114,7 +114,7 @@ export default async function Pengaturan() {
       </form>
 
       <Section title="Identitas" id="identitas">
-        <p className="text-sm text-muted">“Aku adalah orang yang…”. Bisa dipakai sebagai sumber blok Afirmasi; modul Life lengkap menyusul.</p>
+        <p className="text-sm text-muted">“Aku adalah orang yang…”. Bisa dipakai sebagai sumber blok Afirmasi dan dikelola lengkap di modul Manifestasi.</p>
         <ul className="flex flex-col">
           {identities?.map((i) => (
             <li key={i.id} className="flex min-h-12 items-center gap-3 border-t border-line-soft first:border-t-0">

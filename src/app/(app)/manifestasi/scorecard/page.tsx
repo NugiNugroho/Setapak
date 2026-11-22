@@ -20,7 +20,7 @@ export default async function Scorecard() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader eyebrow="Life" title="Habits Scorecard" />
+      <PageHeader eyebrow="Manifestasi" title="Habits Scorecard" />
       <LifeNav current="scorecard" />
       <Card title="Rutinitasmu hari ini, apa adanya" aside={`${count("+")} baik · ${count("=")} netral · ${count("-")} buruk`}>
         <p className="text-sm text-ink-2">Tulis rutinitas harian dari bangun sampai tidur, lalu tandai: apakah ini membawamu ke orang yang ingin kamu jadi (+), menjauhkan (−), atau netral (=)? Kesadaran datang sebelum perubahan.</p>

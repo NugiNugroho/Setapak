@@ -40,8 +40,8 @@ export default async function HabitDetail({ params, searchParams }: { params: Pr
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5">
       <div className="flex items-center justify-between">
-        <Link href="/life" className="flex items-center gap-1 text-sm font-semibold text-accent"><ChevronLeft size={16} aria-hidden />Life</Link>
-        <Link href={`/life/habit/${id}/ubah`} className="btn min-h-9 text-sm"><Pencil size={14} aria-hidden />Ubah</Link>
+        <Link href="/manifestasi" className="flex items-center gap-1 text-sm font-semibold text-accent"><ChevronLeft size={16} aria-hidden />Manifestasi</Link>
+        <Link href={`/manifestasi/habit/${id}/ubah`} className="btn min-h-9 text-sm"><Pencil size={14} aria-hidden />Ubah</Link>
       </div>
       <header className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold tracking-tight">{h.kind === "break" ? `Berhenti: ${h.name}` : h.name}</h1>
@@ -63,15 +63,15 @@ export default async function HabitDetail({ params, searchParams }: { params: Pr
             <form action={setHabitLevel.bind(null, id, h.advice === "up" ? h.level + 1 : Math.max(1, h.level - 1))}>
               <button className="btn border-0 bg-surface text-accent">{h.advice === "up" ? `Naik ke level ${h.level + 1}` : `Turun ke level ${Math.max(1, h.level - 1)}`}</button>
             </form>
-            <Link href={`/life/habit/${id}/ubah`} className="btn border-on-accent/40 bg-transparent text-on-accent">Ubah versi habit</Link>
+            <Link href={`/manifestasi/habit/${id}/ubah`} className="btn border-on-accent/40 bg-transparent text-on-accent">Ubah versi habit</Link>
           </div>
         </section>
       )}
 
       <Card title={monthLabel(m)} aside={
         <span className="flex gap-2">
-          <Link href={`/life/habit/${id}?m=${shiftMonth(m, -1)}`} className="font-semibold text-accent">‹ Sebelumnya</Link>
-          {m < today.slice(0, 7) && <Link href={`/life/habit/${id}?m=${shiftMonth(m, 1)}`} className="font-semibold text-accent">Berikutnya ›</Link>}
+          <Link href={`/manifestasi/habit/${id}?m=${shiftMonth(m, -1)}`} className="font-semibold text-accent">‹ Sebelumnya</Link>
+          {m < today.slice(0, 7) && <Link href={`/manifestasi/habit/${id}?m=${shiftMonth(m, 1)}`} className="font-semibold text-accent">Berikutnya ›</Link>}
         </span>
       }>
         <div className="grid grid-cols-7 gap-1 text-center">

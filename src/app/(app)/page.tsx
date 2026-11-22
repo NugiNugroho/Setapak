@@ -179,12 +179,12 @@ export default async function HariIni({ searchParams }: { searchParams: Promise<
                   {list.length ? list.map((h) => (
                     <div key={h.id} className="flex min-h-12 items-center gap-2 border-t border-line-soft first:border-t-0">
                       <HabitToggle habitId={h.id} date={today} status={h.today} name={h.name} />
-                      <Link href={`/life/habit/${h.id}`} className="flex min-w-0 flex-1 flex-col">
+                      <Link href={`/manifestasi/habit/${h.id}`} className="flex min-w-0 flex-1 flex-col">
                         <span className="font-medium">{h.name}</span>
                         {h.missed >= 1 && !h.today ? <span className="text-xs font-semibold text-warn">Jangan bolong dua kali</span> : h.two_min_version ? <span className="truncate text-xs text-muted">minimal: {h.two_min_version}</span> : null}
                       </Link>
                     </div>
-                  )) : <p className="text-sm text-muted">Belum ada habit hari ini. <Link href="/life/habit/baru" className="font-semibold text-accent">Buat habit</Link></p>}
+                  )) : <p className="text-sm text-muted">Belum ada habit hari ini. <Link href="/manifestasi/habit/baru" className="font-semibold text-accent">Buat habit</Link></p>}
                 </BlockCard>
               );
             } else if (b.type === "tracks" && trk) {

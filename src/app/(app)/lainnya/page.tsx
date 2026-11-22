@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Sparkles, Activity, CalendarDays, Settings } from "lucide-react";
 export const metadata = { title: "Lainnya" };
 const ITEMS = [
-  { href: "/life", label: "Life", desc: "Identitas, habit, visi", icon: Sparkles },
+  { href: "/manifestasi", label: "Manifestasi", desc: "Identitas, habit, visi", icon: Sparkles },
   { href: "/tracks", label: "Tracks", desc: "Progress hal yang ditekuni", icon: Activity },
   { href: "/review", label: "Weekly Review", desc: "Refleksi mingguan", icon: CalendarDays },
   { href: "/pengaturan", label: "Pengaturan", desc: "Profil, tema, modul, afirmasi", icon: Settings },

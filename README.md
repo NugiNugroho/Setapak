@@ -14,7 +14,7 @@ Aplikasi produktivitas pribadi (web + PWA untuk smartphone): task harian, keuang
 | Task | Input cepat berbahasa Indonesia, berulang, carry-over, label, prioritas utama |
 | Keuangan | Ringkasan bulanan, transaksi + field kustom + template, dompet, kategori, budget, tabungan, aset, hutang/piutang, net worth, mode privasi, ekspor CSV |
 | Tracks | Metrik kustom, log sesi, timer fokus, heatmap, streak, target |
-| Life | Identitas & suara, habit Empat Hukum, habit stack, never miss twice, level, goal & milestone, scorecard, refleksi, Annual Review |
+| Manifestasi | Identitas & suara, habit Empat Hukum, habit stack, never miss twice, level, goal & milestone, scorecard, refleksi, Annual Review |
 | Weekly Review | Ringkasan otomatis mingguan, refleksi, 3 prioritas jadi task, arsip |
 
 Rencana berikutnya: PIN untuk nominal tersembunyi, notifikasi push, vision board bergambar, mode offline penuh.

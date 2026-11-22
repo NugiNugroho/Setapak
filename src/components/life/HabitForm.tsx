@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { saveHabit } from "@/app/(app)/life/actions";
+import { saveHabit } from "@/app/(app)/manifestasi/actions";
 import { intention, type Habit } from "@/lib/habits";
 
 type Opt = { id: string; label: string };

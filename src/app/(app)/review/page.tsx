@@ -151,7 +151,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
       <Card title="5 · Konsistensi habit">
         {habitRows.length ? habitRows.map(({ h, cells, pct }) => (
           <div key={h.id} className="flex flex-wrap items-center gap-3 border-t border-line-soft py-2 first:border-t-0">
-            <Link href={`/life/habit/${h.id}`} className="min-w-[160px] flex-1 font-semibold">{h.name}</Link>
+            <Link href={`/manifestasi/habit/${h.id}`} className="min-w-[160px] flex-1 font-semibold">{h.name}</Link>
             <span className="flex gap-1" aria-hidden>{cells.map((c) => <span key={c.d} className="size-[18px] rounded-[5px]" style={{ background: COLOR[c.s] }} />)}</span>
             <b className="w-11 text-right">{pct == null ? "—" : `${pct}%`}</b>
             <span className={`w-36 rounded-md px-2 py-1 text-center text-xs font-semibold ${h.advice === "up" ? "bg-accent-soft text-accent" : h.advice === "down" ? "bg-warn-soft text-warn" : "bg-sidebar text-ink-2"}`}>

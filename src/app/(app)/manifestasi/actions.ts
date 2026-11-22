@@ -32,7 +32,7 @@ export async function saveHabit(f: FormData) {
       .single();
     identity_id = data?.id ?? null;
   }
-  if (!identity_id) redirect("/life/habit/baru?error=identitas");
+  if (!identity_id) redirect("/manifestasi/habit/baru?error=identitas");
 
   let stack_id = s(f, "stack_id");
   const newStack = s(f, "new_stack");
@@ -71,7 +71,7 @@ export async function saveHabit(f: FormData) {
     ? await supabase.from("habits").update(row).eq("id", id).select("id").single()
     : await supabase.from("habits").insert(row).select("id").single();
   done();
-  redirect(res.data ? `/life/habit/${res.data.id}` : "/life");
+  redirect(res.data ? `/manifestasi/habit/${res.data.id}` : "/manifestasi");
 }
 
 export async function setHabitStatus(habitId: string, date: string, status: HabitStatus | null) {
@@ -107,7 +107,7 @@ export async function setHabitArchived(id: string, archived: boolean) {
   const supabase = await ctx();
   await supabase.from("habits").update({ archived }).eq("id", id);
   done();
-  if (archived) redirect("/life");
+  if (archived) redirect("/manifestasi");
 }
 
 export async function deleteStack(id: string) {

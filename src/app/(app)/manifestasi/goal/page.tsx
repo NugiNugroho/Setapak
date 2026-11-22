@@ -28,7 +28,7 @@ export default async function GoalPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader eyebrow="Life" title="Visi & Goal" />
+      <PageHeader eyebrow="Manifestasi" title="Visi & Goal" />
       <LifeNav current="goal" />
 
       <Card title="Visi">

@@ -17,7 +17,7 @@ export default async function EditHabit({ params }: { params: Promise<{ id: stri
     <div className="mx-auto flex max-w-xl flex-col gap-4">
       <header className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Ubah habit</h1>
-        <Link href={`/life/habit/${id}`} aria-label="Tutup" className="btn size-10 px-0"><X size={18} aria-hidden /></Link>
+        <Link href={`/manifestasi/habit/${id}`} aria-label="Tutup" className="btn size-10 px-0"><X size={18} aria-hidden /></Link>
       </header>
       <HabitForm habit={data as Habit} {...opts} />
     </div>
