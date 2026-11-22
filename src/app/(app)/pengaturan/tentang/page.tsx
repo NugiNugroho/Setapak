@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { ChevronLeft, ExternalLink } from "lucide-react";
 import { ABOUT } from "@/lib/about";
+import { LIBRARY } from "@/lib/music-library";
 
 export const metadata = { title: "Tentang" };
 
@@ -33,6 +34,20 @@ export default function Tentang() {
             <span className="flex items-center gap-1.5 font-semibold text-accent">{c.value}<ExternalLink size={13} aria-hidden /></span>
           </a>
         ))}
+      </section>
+
+      <section aria-label="Kredit musik" className="card flex flex-col gap-2 p-5 text-sm text-ink-2">
+        <h2 className="text-xs font-bold tracking-wide text-muted uppercase">Kredit musik</h2>
+        <p>Suara Hujan, Ombak, dan Brown noise dibuat langsung oleh aplikasi.</p>
+        {LIBRARY.length > 0 && (
+          <ul className="flex flex-col gap-1">
+            {LIBRARY.map((t) => (
+              <li key={t.id}>
+                <a href={t.source} target="_blank" rel="noreferrer" className="font-semibold text-accent">{t.title}</a> oleh {t.artist} · {t.license}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <footer className="flex flex-col items-center gap-1 pb-6 text-center">

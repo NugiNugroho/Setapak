@@ -49,3 +49,15 @@ export async function removeFile(path: string | null | undefined) {
   if (!user || !path || !path.startsWith(`${user.id}/`)) return;
   await supabase.storage.from(BUCKET).remove([path]);
 }
+
+/** Daftar lagu milik user + URL putar baru (dipanggil pemutar musik saat dibuka). */
+export async function listSongs() {
+  const { supabase, user } = await getUser();
+  if (!user) return [];
+  const { data } = await supabase.from("media").select("id,title,path").eq("kind", "audio").order("sort_order").order("created_at");
+  const rows = data ?? [];
+  if (!rows.length) return [];
+  const { data: signed } = await supabase.storage.from(BUCKET).createSignedUrls(rows.map((r) => r.path), 3600);
+  const urls = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
+  return rows.filter((r) => urls.get(r.path)).map((r) => ({ id: r.id as string, title: (r.title as string) ?? "Lagu", url: urls.get(r.path)! }));
+}

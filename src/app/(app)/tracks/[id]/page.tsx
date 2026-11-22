@@ -9,7 +9,6 @@ import { PageHeader, Card, Field, Bar } from "@/components/ui";
 import { Heatmap } from "@/components/tracks/Heatmap";
 import { LogForm } from "@/components/tracks/LogForm";
 import { FocusSound } from "@/components/tracks/FocusSound";
-import { signedUrls } from "@/lib/media";
 import { addMetric, deleteLog, deleteMetric, setPrimaryMetric, setTrackArchived, updateMetric, updateTrack } from "../actions";
 
 export const metadata = { title: "Detail track" };
@@ -30,9 +29,6 @@ export default async function TrackDetail({ params }: { params: Promise<{ id: st
   ]);
   const track = tracks[0];
   if (!track) notFound();
-  const { data: songRows } = await supabase.from("media").select("id,title,path").eq("kind", "audio").order("sort_order").order("created_at");
-  const songUrls = await signedUrls(supabase, (songRows ?? []).map((s) => s.path));
-  const songs = (songRows ?? []).filter((s) => songUrls.get(s.path)).map((s) => ({ id: s.id, title: s.title ?? "Lagu", url: songUrls.get(s.path)! }));
   const metrics = allMetrics.filter((m) => m.track_id === id);
   const s = summarizeTrack(track, metrics, logs, today, 26);
   const shown: Metric[] = metrics.length ? metrics : [DURATION_METRIC];
@@ -114,7 +110,7 @@ export default async function TrackDetail({ params }: { params: Promise<{ id: st
 
         <div className="flex grow basis-[320px] flex-col gap-5">
           <Card title="Catat sesi">
-            <FocusSound songs={songs} />
+            <FocusSound />
             <LogForm trackId={id} metrics={metrics} today={today} />
           </Card>
 
