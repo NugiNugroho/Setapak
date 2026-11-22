@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { requireProfile } from "@/lib/profile";
 import { loadPrivacy } from "@/lib/finance";
@@ -124,6 +125,9 @@ export default async function Pengaturan() {
 
       <Section title="Pengingat harian" id="pengingat">
         <ReminderSettings initial={profile.prefs.reminders} />
+        {!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && (
+          <p className="text-xs text-muted">Notifikasi belum disiapkan di server. <Link href="/pengaturan/kunci-notifikasi" className="font-semibold text-accent">Buat kunci notifikasi</Link></p>
+        )}
       </Section>
 
       <div className="flex flex-wrap gap-2">
