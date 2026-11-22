@@ -63,3 +63,17 @@ export async function deleteIdentity(id: string) {
   await supabase.from("identities").delete().eq("id", id);
   done();
 }
+
+export async function savePrivacy(form: FormData) {
+  const { supabase, user } = await requireProfile();
+  const sections = ["transactions", "wallets", "savings", "assets", "debts", "net_worth"];
+  await supabase.from("privacy_settings").upsert(
+    sections.map((section) => ({
+      user_id: user.id,
+      section,
+      mode: form.get(`p_${section}`) === "hidden" ? "hidden" : "visible",
+    })),
+    { onConflict: "user_id,section" },
+  );
+  done();
+}

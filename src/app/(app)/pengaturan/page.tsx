@@ -1,7 +1,8 @@
 import { Trash2 } from "lucide-react";
 import { requireProfile } from "@/lib/profile";
+import { loadPrivacy } from "@/lib/finance";
 import {
-  saveProfile, addAffirmation, toggleAffirmation, deleteAffirmation, addIdentity, deleteIdentity,
+  saveProfile, savePrivacy, addAffirmation, toggleAffirmation, deleteAffirmation, addIdentity, deleteIdentity,
 } from "./actions";
 
 export const metadata = { title: "Pengaturan" };
@@ -28,6 +29,15 @@ export default async function Pengaturan() {
     supabase.from("identities").select("id,statement,area_id").eq("archived", false).order("sort_order").order("created_at"),
   ]);
   const areaName = (id: string | null) => areas?.find((a) => a.id === id)?.name;
+  const priv = await loadPrivacy(supabase);
+  const SECTIONS = [
+    ["transactions", "Transaksi & arus kas"],
+    ["wallets", "Saldo dompet"],
+    ["savings", "Tabungan"],
+    ["assets", "Aset"],
+    ["debts", "Hutang & piutang"],
+    ["net_worth", "Net worth"],
+  ] as const;
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
@@ -82,10 +92,25 @@ export default async function Pengaturan() {
               {[1, 5, 15, 30].map((m) => <option key={m} value={m}>{m} menit</option>)}
             </select>
           </Field>
-          <p className="text-xs text-muted">Pengaturan per bagian (tabungan, aset, hutang, net worth) dan PIN hadir bersama modul Keuangan.</p>
         </Section>
 
         <button className="btn btn-primary min-h-12 self-start px-6">Simpan pengaturan</button>
+      </form>
+
+      <form action={savePrivacy}>
+        <Section title="Nominal yang disembunyikan">
+          <p className="text-sm text-muted">Bagian “Tersembunyi” tampil sebagai Rp •••••• sampai kamu mengetuk ikon mata.</p>
+          {SECTIONS.map(([key, label]) => (
+            <label key={key} className="flex min-h-12 items-center justify-between gap-3 border-t border-line-soft">
+              <span>{label}</span>
+              <select name={`p_${key}`} defaultValue={priv[key] ? "hidden" : "visible"} className="field w-40">
+                <option value="visible">Tampil</option>
+                <option value="hidden">Tersembunyi</option>
+              </select>
+            </label>
+          ))}
+          <button className="btn self-start">Simpan privasi</button>
+        </Section>
       </form>
 
       <Section title="Identitas" id="identitas">
