@@ -34,6 +34,27 @@ export async function updateSession(request: NextRequest) {
   }
 
   const path = request.nextUrl.pathname;
+  const qs = request.nextUrl.searchParams;
+
+  // Tautan dari email Supabase kadang mendarat di halaman lain (mis. "/?code=…"
+  // bila Redirect URL belum terdaftar). Arahkan ke penangan yang benar.
+  if (!path.startsWith("/auth/")) {
+    const to = request.nextUrl.clone();
+    if (qs.get("code")) {
+      to.pathname = "/auth/callback";
+      to.search = `?code=${encodeURIComponent(qs.get("code")!)}`;
+      return NextResponse.redirect(to);
+    }
+    if (qs.get("token_hash") && qs.get("type")) {
+      to.pathname = "/auth/confirm";
+      return NextResponse.redirect(to);
+    }
+    if (qs.get("error_code") && path !== "/login") {
+      to.pathname = "/login";
+      to.search = `?error_code=${encodeURIComponent(qs.get("error_code")!)}`;
+      return NextResponse.redirect(to);
+    }
+  }
   const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith(p + "/"));
 
   if (!user && !isPublic) {

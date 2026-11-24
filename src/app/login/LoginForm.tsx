@@ -2,14 +2,12 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { SESSION_KEY } from "@/components/Welcome";
-import { signIn, signUp, signInWithGoogle, type AuthState } from "./actions";
+import { authAction, signInWithGoogle, type AuthState } from "./actions";
 
-export function LoginForm({ initialError }: { initialError?: string }) {
+export function LoginForm({ initialError, initialMessage }: { initialError?: string; initialMessage?: string }) {
   const [mode, setMode] = useState<"masuk" | "daftar">("masuk");
-  const [state, action, pending] = useActionState<AuthState, FormData>(
-    mode === "masuk" ? signIn : signUp,
-    { error: initialError },
-  );
+  const [state, action, pending] = useActionState<AuthState, FormData>(authAction, { error: initialError, message: initialMessage });
+  const [shown, setShown] = useState(true);
 
   // Setelah masuk, animasi sambutan diputar lagi.
   useEffect(() => {
@@ -25,7 +23,7 @@ export function LoginForm({ initialError }: { initialError?: string }) {
             type="button"
             role="tab"
             aria-selected={mode === m}
-            onClick={() => setMode(m)}
+            onClick={() => { setMode(m); setShown(false); }}
             className={`min-h-10 rounded-[9px] text-sm font-semibold capitalize ${
               mode === m ? "bg-surface text-ink shadow-sm" : "text-muted"
             }`}
@@ -35,7 +33,8 @@ export function LoginForm({ initialError }: { initialError?: string }) {
         ))}
       </div>
 
-      <form action={action} className="flex flex-col gap-3">
+      <form action={(f) => { setShown(true); action(f); }} className="flex flex-col gap-3">
+        <input type="hidden" name="mode" value={mode} />
         {mode === "daftar" && (
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="text-muted">Nama panggilan</span>
@@ -57,8 +56,8 @@ export function LoginForm({ initialError }: { initialError?: string }) {
             autoComplete={mode === "masuk" ? "current-password" : "new-password"}
           />
         </label>
-        {state?.error && <p className="text-sm text-neg" role="alert">{state.error}</p>}
-        {state?.message && <p className="text-sm text-pos" role="status">{state.message}</p>}
+        {shown && state?.error && <p className="text-sm text-neg" role="alert">{state.error}</p>}
+        {shown && state?.message && <p className="text-sm text-pos" role="status">{state.message}</p>}
         <button className="btn btn-primary mt-1 min-h-12" disabled={pending}>
           {pending ? "Memproses…" : mode === "masuk" ? "Masuk" : "Buat akun"}
         </button>
